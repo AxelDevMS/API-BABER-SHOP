@@ -1,6 +1,7 @@
 package ams.dev.api.barber_shop.controller;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.AuthRequestDto;
 import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
 import ams.dev.api.barber_shop.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,4 +54,12 @@ public class UserController {
         ApiResponseDto response = userService.executeCreateEmployee(employeeRequestDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @PostMapping("/auth")
+    public ResponseEntity<ApiResponseDto> authenticate(@RequestBody AuthRequestDto authRequestDto){
+        ApiResponseDto response  = userService.authenticate(authRequestDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package ams.dev.api.barber_shop.service;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.AuthRequestDto;
 import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
 
@@ -47,4 +48,5 @@ public interface UserService {
      * @return ApiResponseDto con mensaje de confirmación y ID del usuario creado
      */
     ApiResponseDto executeCreateEmployee(EmployeeRequestDto empolyeeRequestDto);
+    ApiResponseDto authenticate(AuthRequestDto authRequestDto);
 }

@@ -1,14 +1,20 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.AuthRequestDto;
 import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import ams.dev.api.barber_shop.mapper.MapperEntity;
 import ams.dev.api.barber_shop.repository.UserRepository;
+import ams.dev.api.barber_shop.security.jwt.JwtService;
 import ams.dev.api.barber_shop.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -59,6 +65,57 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    @Lazy
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
+
+
+    /**
+     * Autentica un usuario y genera un token JWT si las credenciales son válidas.
+     *
+     * Flujo de ejecución:
+     * 1. Crea un token de autenticación con username y password proporcionados
+     * 2. Valida las credenciales contra la BD usando AuthenticationManager
+     * 3. Si la autenticación es exitosa, genera un token JWT
+     * 4. Retorna respuesta con el token o mensaje de error
+     *
+     * Detalles técnicos:
+     * - Se usa UsernamePasswordAuthenticationToken para encapsular las credenciales
+     * - AuthenticationManager valida contra UserDetailsService (este mismo servicio)
+     * - El token JWT se genera usando JwtService con el username autenticado
+     * - AuthenticationManager puede lanzar excepción si credenciales son inválidas
+     *
+     * Casos de éxito:
+     * - Username y password válidos → Token generado exitosamente
+     *
+     * Casos de error:
+     * - Username no existe o no está activo → UsernameNotFoundException
+     * - Password incorrecto → BadCredentialsException
+     * - Usuario deshabilitado → DisabledException
+     *
+     * @param authRequestDto DTO con username y password sin encriptar
+     * @return ApiResponseDto con mensaje de éxito incluyendo el token JWT,
+     *         o mensaje de error si la autenticación falló
+     * @throws UsernameNotFoundException si el usuario no existe o está inactivo
+     */
+    @Override
+    public ApiResponseDto authenticate(AuthRequestDto authRequestDto) {
+        Authentication  authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequestDto.getUsername(),
+                        authRequestDto.getPassword()
+                )
+        );
+
+        if (authenticate.isAuthenticated()){
+            String token = jwtService.generateToken(authRequestDto.getUsername());
+            return new ApiResponseDto("Token generado: "+token);
+        }
+        return new ApiResponseDto("No se pudo generar el token");
+    }
 
     /**
      * Crea un nuevo empleado/usuario en el sistema.

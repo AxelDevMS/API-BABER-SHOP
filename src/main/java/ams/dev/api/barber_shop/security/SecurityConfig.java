@@ -1,73 +1,64 @@
 package ams.dev.api.barber_shop.security;
 
+import ams.dev.api.barber_shop.security.jwt.JwtFilter;
 import ams.dev.api.barber_shop.service.impl.UserServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Configuración de seguridad de la aplicación usando Spring Security.
+ * Configuración de seguridad de Spring Security para la aplicación.
  *
- * Esta clase centraliza toda la configuración de seguridad incluyendo:
- * - Autenticación HTTP Basic
- * - Autorización y control de acceso a endpoints
- * - Encriptación de contraseñas
- * - Definición de beans de seguridad
+ * Objetivo:
+ * - Definir la cadena de filtros (SecurityFilterChain) y las reglas de autorización.
+ * - Proveer beans necesarios para autenticación basada en UserDetails (DAO) y encriptación de contraseñas.
+ * - Inyectar un filtro JWT para extracción/validación de tokens antes del procesamiento por defecto.
  *
- * Anotaciones:
- * - @Configuration: Marca como clase de configuración Spring
- * - @EnableWebSecurity: Activa la seguridad web de Spring
+ * Principales responsabilidades y decisiones de diseño:
+ * - Se usa un {@link UserDetailsService} (implementado por {@link UserServiceImpl}) para cargar usuarios desde la capa de dominio/repository.
+ * - Se configura un {@link DaoAuthenticationProvider} con un {@link PasswordEncoder} BCrypt para comparación segura de credenciales.
+ * - El {@link AuthenticationManager} se construye explícitamente como un {@link ProviderManager} que contiene el proveedor DAO; esto permite inyectar el manager en otras partes de la aplicación si es necesario.
+ * - Se añade {@link JwtFilter} antes de {@link UsernamePasswordAuthenticationFilter} para permitir la validación del token JWT en solicitudes entrantes.
  *
- * Flujo de autenticación HTTP Basic:
- * 1. Cliente envía header: Authorization: Basic base64(username:password)
- * 2. Spring Security extrae credentials
- * 3. Llama AuthenticationManager.authenticate()
- * 4. Valida contra UserDetailsService (UserServiceImpl)
- * 5. Compara contraseña usando PasswordEncoder (BCrypt)
- * 6. Si es válido, permite acceso; si no, retorna 401 Unauthorized
+ * Notas de seguridad técnicas:
+ * - BCrypt es usado para almacenar/validar contraseñas, aprovechando su coste ajustable y salt incorporado.
+ * - CSRF se deshabilita en la configuración HTTP: esto es común en APIs REST stateless que usan tokens (si el app es sólo API, asegurarse de usar otras protecciones apropiadas).
+ * - Las rutas públicas y privadas se definen en {@link #basicAuth(HttpSecurity)}; revisar este método si la política de endpoints cambia.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private JwtFilter jwtFilter;
+
     /**
-     * Configura la cadena de filtros de seguridad para HTTP.
+     * Define la cadena de filtros y las reglas de autorización HTTP.
      *
-     * Define qué endpoints requieren autenticación y cuáles son públicos:
+     * Comportamiento principal:
+     * - Deshabilita CSRF porque la aplicación expone endpoints REST y usa tokens (stateless).
+     * - Declara rutas permitidas sin autenticación y exige autenticación para el resto.
+     * - Inserta {@code jwtFilter} antes del filtro de autenticación por nombre de usuario para validar tokens JWT previamente.
      *
-     * Endpoints permitidos (sin autenticación):
-     * - GET /hello
-     * - GET /hey
-     * - GET /hi
-     * - Cualquier ruta bajo /user/**
+     * Consideraciones de implementación:
+     * - Si se pretende usar sesiones stateful o formularios, hay que revisar CSRF y configurar session management.
+     * - El orden de los filtros importa: colocar el filtro JWT antes de UsernamePasswordAuthenticationFilter permite poblar el SecurityContext desde el token.
      *
-     * Endpoints que requieren autenticación:
-     * - Todos los demás (anyRequest().authenticated())
-     *
-     * Autenticación habilitada:
-     * - HTTP Basic con valores por defecto
-     *
-     * Flujo de una solicitud:
-     * 1. Spring Security intercepta la solicitud
-     * 2. Verifica si la ruta está permitida
-     * 3. Si no, requiere autenticación HTTP Basic
-     * 4. Si la ruta está permitida, permite acceso sin autenticación
-     *
-     * @param httpSecurity objeto para configurar seguridad HTTP
+     * @param httpSecurity objeto de configuración HTTP de Spring Security
      * @return SecurityFilterChain configurada
-     * @throws Exception si hay error en la configuración
      */
     @Bean
-    public SecurityFilterChain basicAuth(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain basicAuth(HttpSecurity httpSecurity) {
         httpSecurity
                 .csrf(csrf -> csrf.disable())
                 // Configuración de autorización por ruta
@@ -83,23 +74,23 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 // Habilita autenticación HTTP Basic con configuración por defecto
-                .httpBasic(Customizer.withDefaults());
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
 
     /**
-     * Bean que proporciona el servicio de detalles de usuario.
+     * Bean que expone la implementación de {@link UserDetailsService} usada por los proveedores de autenticación.
      *
-     * Este bean es utilizado por Spring Security para:
-     * 1. Cargar detalles del usuario durante autenticación
-     * 2. Validar que el usuario existe
-     * 3. Obtener detalles como roles y permisos
+     * Implementación concreta:
+     * - Devuelve una instancia de {@link UserServiceImpl} que debe implementar {@code loadUserByUsername}.
      *
-     * Implementación: UserServiceImpl que implementa UserDetailsService
-     * Método clave: loadUserByUsername() que busca el usuario en BD
+     * Contrato:
+     * - Input: username (a través del flujo de autenticación Spring Security).
+     * - Output: {@code UserDetails} con username, password (hashed) y authorities.
+     * - Error mode: lanzar UsernameNotFoundException si el usuario no existe.
      *
-     * @return UserDetailsService implementado por UserServiceImpl
+     * @return UserDetailsService para cargar usuarios desde la capa de persistencia
      */
     @Bean
     public UserDetailsService userDetailsService() {
@@ -107,25 +98,19 @@ public class SecurityConfig {
     }
 
     /**
-     * Bean que proporciona el AuthenticationManager.
+     * Construye el {@link AuthenticationManager} usando un {@link DaoAuthenticationProvider}.
      *
-     * El AuthenticationManager es responsable de:
-     * 1. Recibir las credenciales (username y password)
-     * 2. Seleccionar el proveedor de autenticación apropiado
-     * 3. Delegar la validación al proveedor
-     * 4. Retornar el Authentication si es válido
+     * Detalles:
+     * - {@code DaoAuthenticationProvider} delega en {@link UserDetailsService} para recuperar el usuario y usa el {@link PasswordEncoder}
+     *   para comparar el password proporcionado con el hash almacenado.
+     * - Se devuelve un {@link ProviderManager} que contiene el proveedor configurado.
      *
-     * Implementación: ProviderManager que usa DaoAuthenticationProvider
+     * Casos de uso:
+     * - Este bean puede inyectarse allí donde se necesite iniciar una autenticación programática.
      *
-     * Flujo:
-     * 1. DaoAuthenticationProvider usa UserDetailsService para cargar usuario
-     * 2. Compara la contraseña proporcionada con la almacenada
-     * 3. Usa PasswordEncoder para comparación segura
-     * 4. Retorna Authentication autenticado o lanza AuthenticationException
-     *
-     * @param userDetailsService servicio que carga detalles del usuario
-     * @param passwordEncoder codificador de contraseñas
-     * @return AuthenticationManager configurado
+     * @param userDetailsService servicio que devuelve {@code UserDetails}
+     * @param passwordEncoder codificador usado para validar contraseñas
+     * @return AuthenticationManager configurado con el proveedor DAO
      */
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
@@ -140,28 +125,16 @@ public class SecurityConfig {
     }
 
     /**
-     * Bean que proporciona el codificador de contraseñas.
+     * Provee el {@link PasswordEncoder} para la aplicación.
      *
-     * BCryptPasswordEncoder es el estándar de seguridad moderna para contraseñas:
+     * Elegimos {@link BCryptPasswordEncoder} por las siguientes razones técnicas:
+     * - Incluye salt por diseño y produce hashes adaptativos (cost factor configurable).
+     * - Es resistente a ataques de diccionario/ fuerza bruta cuando el cost es suficientemente alto.
+     * - Es ampliamente soportado e integrado en Spring Security.
      *
-     * Características:
-     * - Usa el algoritmo bcrypt (basado en Blowfish)
-     * - Genera salt aleatorio automáticamente
-     * - Es computacionalmente costoso (slow by design) para resistir ataques de fuerza bruta
-     * - Es unidireccional: no se pueden desencriptar, solo se comparan
-     * - Incluye costo adaptable (strength)
+     * Nota operativa: si se necesita ajustar el coste en producción, pasar el parámetro de strength al constructor.
      *
-     * Flujo de encriptación:
-     * 1. Se genera un salt aleatorio
-     * 2. Se aplica bcrypt con el salt
-     * 3. Se almacena: $2a$10$...(salt + hash)
-     *
-     * Flujo de validación:
-     * 1. Se extrae el salt del hash almacenado
-     * 2. Se aplica bcrypt a la contraseña con ese salt
-     * 3. Se compara el resultado con el hash almacenado
-     *
-     * @return BCryptPasswordEncoder para uso en toda la aplicación
+     * @return implementación BCrypt de PasswordEncoder
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
