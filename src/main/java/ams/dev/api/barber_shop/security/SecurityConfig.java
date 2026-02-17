@@ -69,6 +69,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain basicAuth(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
+                .csrf(csrf -> csrf.disable())
                 // Configuración de autorización por ruta
                 .authorizeHttpRequests(auth ->
                         auth
