@@ -1,7 +1,7 @@
 package ams.dev.api.barber_shop.security;
 
 import ams.dev.api.barber_shop.security.jwt.JwtFilter;
-import ams.dev.api.barber_shop.service.impl.UserServiceImpl;
+import ams.dev.api.barber_shop.service.impl.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,7 +67,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * - SecurityFilterChain: Cadena de filtros de Spring Security
  *
  * @see ams.dev.api.barber_shop.security.jwt.JwtFilter
- * @see ams.dev.api.barber_shop.service.impl.UserServiceImpl
+ * @see AuthServiceImpl
  * @see org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
  */
 @Configuration
@@ -109,7 +109,7 @@ public class SecurityConfig {
      */
     @Bean
     public UserDetailsService userDetailsService() {
-        return new UserServiceImpl(); // Instancia y retorna el servicio personalizado que implementa UserDetailsService
+        return new AuthServiceImpl(); // Instancia y retorna el servicio personalizado que implementa UserDetailsService
     }
 
     /**

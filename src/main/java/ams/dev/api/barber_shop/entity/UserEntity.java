@@ -5,6 +5,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Entidad JPA que representa un Usuario en la base de datos.
@@ -33,51 +38,47 @@ import lombok.NoArgsConstructor;
 @Data
 public class UserEntity {
 
-    /**
-     * Identificador único del usuario.
-     *
-     * Estrategia: UUID (Universal Unique Identifier)
-     * - Ventajas: Unicidad global, no requiere coordinación de IDs
-     * - Generado automáticamente por JPA
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    /**
-     * Nombre de usuario único para autenticación.
-     *
-     * Se utiliza como credencial para iniciar sesión en el sistema.
-     * Debe ser único en la base de datos (aunque no está configurado como unique constraint).
-     */
     @Column(name = "username")
     private String username;
 
-    /**
-     * Contraseña del usuario encriptada.
-     *
-     * Se almacena siempre encriptada utilizando BCryptPasswordEncoder.
-     * Nunca debe almacenarse en texto plano por razones de seguridad.
-     *
-     * @see org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-     */
-    @Column(name = "password")
+    private String email;
+
     private String password;
 
-    /**
-     * Estado de activación del usuario.
-     *
-     * - true: Usuario activo, puede autenticarse
-     * - false: Usuario inactivo, no puede autenticarse (lógica soft-delete)
-     *
-     * Se utiliza en las búsquedas para filtrar solo usuarios activos
-     * (@see UserRepository#findByUsernameAndIsActive)
-     */
+    private String name;
+
+    @Column(name = "lastname")
+    private String lastName;
+
+    private String phone;
+
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
 
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    private RoleEnum role;
+    @Column(name = "last_login")
+    private Date lastLogin;
+
+    //@Column(name = "role")
+    //@Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private RoleEntity role;
+
+    @ManyToMany(mappedBy = "users")
+    private List<BarberShopEntity> barberShops;
+
+    @CreationTimestamp
+    private Date createdAt;
+
+    @UpdateTimestamp
+    private Date updatedAt;
+
+
 }

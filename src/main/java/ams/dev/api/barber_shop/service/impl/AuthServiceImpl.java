@@ -2,14 +2,12 @@ package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.AuthRequestDto;
-import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
+import ams.dev.api.barber_shop.dto.user.UserRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import ams.dev.api.barber_shop.mapper.MapperEntity;
 import ams.dev.api.barber_shop.repository.UserRepository;
 import ams.dev.api.barber_shop.security.jwt.JwtService;
-import ams.dev.api.barber_shop.service.UserService;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import ams.dev.api.barber_shop.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -117,13 +114,13 @@ import java.util.List;
  * - AuthenticationManager: Gestor de autenticación de Spring
  * - JwtService: Generación de tokens JWT
  *
- * @see ams.dev.api.barber_shop.service.UserService
+ * @see AuthService
  * @see org.springframework.security.core.userdetails.UserDetailsService
  * @see ams.dev.api.barber_shop.repository.UserRepository
  * @see ams.dev.api.barber_shop.security.jwt.JwtService
  */
 @Service
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class AuthServiceImpl implements AuthService, UserDetailsService {
 
     @Autowired // Inyección del repositorio JPA para operaciones de base de datos con usuarios
     private UserRepository userRepository;
@@ -239,7 +236,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
      * @return ApiResponseDto con mensaje: "Empleado Registrado Correctamente con id: {uuid}"
      */
     @Override
-    public ApiResponseDto executeCreateEmployee(EmployeeRequestDto empolyeeRequestDto) {
+    public ApiResponseDto executeCreateEmployee(UserRequestDto empolyeeRequestDto) {
         // PASO 1: Mapear DTO a entidad
         // Convierte EmployeeRequestDto → UserEntity (copia username y isActive)
         UserEntity userEntity = mapper.toUser(empolyeeRequestDto);
@@ -329,12 +326,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
         // 1. Agrega el ROL como autoridad (ej: "ROLE_ADMIN")
-        authorities.add(new SimpleGrantedAuthority(userEntity.getRole().name()));
+        authorities.add(new SimpleGrantedAuthority(userEntity.getRole().getName()));
 
         // 2. Agrega TODOS los PERMISOS asociados al rol como autoridades individuales
         //    Esto permite control granular con @PreAuthorize("hasAuthority('READ')")
         userEntity.getRole().getPermissions().forEach(permissionEnum -> {
-            authorities.add(new SimpleGrantedAuthority(permissionEnum.name()));
+            authorities.add(new SimpleGrantedAuthority(permissionEnum.getName()));
         });
 
         // Construye y retorna UserDetails usando el builder de Spring Security

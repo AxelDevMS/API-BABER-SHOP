@@ -2,8 +2,9 @@ package ams.dev.api.barber_shop.service;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.AuthRequestDto;
-import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
+import ams.dev.api.barber_shop.dto.user.UserRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
+import ams.dev.api.barber_shop.service.impl.AuthServiceImpl;
 
 /**
  * Interfaz que define el contrato de operaciones de negocio para Usuarios.
@@ -13,9 +14,9 @@ import ams.dev.api.barber_shop.entity.UserEntity;
  * - Autenticación y autorización
  *
  * Implementación:
- * @see ams.dev.api.barber_shop.service.impl.UserServiceImpl
+ * @see AuthServiceImpl
  */
-public interface UserService {
+public interface AuthService {
 
     /**
      * Obtiene un usuario de la base de datos por su nombre de usuario.
@@ -47,6 +48,6 @@ public interface UserService {
      * @param empolyeeRequestDto DTO con datos del empleado (username, password, isActive)
      * @return ApiResponseDto con mensaje de confirmación y ID del usuario creado
      */
-    ApiResponseDto executeCreateEmployee(EmployeeRequestDto empolyeeRequestDto);
+    ApiResponseDto executeCreateEmployee(UserRequestDto empolyeeRequestDto);
     ApiResponseDto authenticate(AuthRequestDto authRequestDto);
 }

@@ -2,8 +2,8 @@ package ams.dev.api.barber_shop.controller;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.AuthRequestDto;
-import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
-import ams.dev.api.barber_shop.service.UserService;
+import ams.dev.api.barber_shop.dto.user.UserRequestDto;
+import ams.dev.api.barber_shop.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +30,7 @@ public class UserController {
      * Servicio de usuario inyectado por Spring para manejar la lógica de negocio
      */
     @Autowired
-    private UserService userService;
+    private AuthService authService;
 
     /**
      * Endpoint para crear un nuevo empleado/usuario en el sistema.
@@ -46,18 +46,18 @@ public class UserController {
      * 3. El servicio mapea el DTO a entidad, encripta la contraseña y persiste en BD
      * 4. Retorna un DTO de respuesta con mensaje de éxito e ID del nuevo usuario
      *
-     * @param employeeRequestDto DTO con los datos del empleado a crear (username, password, isActive)
+     * @param userRequestDto DTO con los datos del empleado a crear (username, password, isActive)
      * @return ResponseEntity con ApiResponseDto conteniendo mensaje de confirmación y HTTP 201
      */
     @PostMapping("/create")
-    public ResponseEntity<ApiResponseDto> executeCreateEmployee(@RequestBody EmployeeRequestDto employeeRequestDto) {
-        ApiResponseDto response = userService.executeCreateEmployee(employeeRequestDto);
+    public ResponseEntity<ApiResponseDto> executeCreateEmployee(@RequestBody UserRequestDto userRequestDto) {
+        ApiResponseDto response = authService.executeCreateEmployee(userRequestDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("/auth")
     public ResponseEntity<ApiResponseDto> authenticate(@RequestBody AuthRequestDto authRequestDto){
-        ApiResponseDto response  = userService.authenticate(authRequestDto);
+        ApiResponseDto response  = authService.authenticate(authRequestDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
