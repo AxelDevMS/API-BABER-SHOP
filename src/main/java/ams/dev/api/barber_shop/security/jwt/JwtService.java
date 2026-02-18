@@ -1,5 +1,4 @@
 package ams.dev.api.barber_shop.security.jwt;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -12,134 +11,100 @@ import java.util.HashMap;
 
 /**
  * Servicio responsable de generar y validar tokens JWT para la aplicación.
- *
- * Notas técnicas y de seguridad:
- * - Usa algoritmo HMAC-SHA256 (HS256) para firmar los tokens.
- * - La clave secreta se define en la constante {@link #SECRET}. En entornos reales
- *   esta clave NO debería estar hardcodeada: debe provenir de un vault/variable
- *   de entorno o configuración cifrada.
- * - {@code Keys.hmacShaKeyFor(byte[])} espera bytes de la clave. Si la clave se
- *   encuentra en formato hex/Base64 se debe decodificar apropiadamente antes de
- *   llamar a ese método. Actualmente se usa {@code SECRET.getBytes()}.
- * - Los métodos de verificación lanzarán excepciones de la librería jjwt
- *   (por ejemplo, JwtException) si la firma es inválida o el token está malformado.
- * - El servicio es stateless y thread-safe ya que no mantiene estado mutable.
  */
-@Service
+@Service // Anotación de Spring que registra esta clase como un bean en el contexto de la aplicación
 public class JwtService {
 
-    /**
-     * Clave secreta usada para firmar los JWTs.
-     *
-     * Observaciones:
-     * - Esta constante contiene un valor en texto (actualmente un string hex-like).
-     *   Usar {@code SECRET.getBytes()} convierte el texto a bytes ASCII/UTF-8 — esto
-     *   es distinto a decodificar un valor hex o Base64. Asegúrate que el formato
-     *   de la clave sea el esperado por tu política de seguridad.
-     * - Para HS256 se recomienda una clave de al menos 256 bits (32 bytes). El valor
-     *   actual tiene 64 caracteres hex, pero como aquí se usan los bytes del string,
-     *   la longitud resultante en bytes puede ser distinta. Mejor práctica: almacenar
-     *   la clave en Base64 y decodificarla explicitamente.
-     */
+    // Constante que contiene la clave secreta para firmar los tokens
+    // Formato actual: Representación hexadecimal de 64 caracteres
+    // WARNING: En producción esto debería venir de variables de entorno o un secrets manager
     public static final String SECRET = "cfe2e7df460bf68cbde50fb23f0b4961523e49fc51cd0f3d9d69971d5a4e960f";
 
     /**
-     * Genera un JWT firmado conteniendo el nombre de usuario como subject.
+     * Genera un nuevo token JWT para un usuario específico con su rol.
      *
-     * Comportamiento:
-     * - Establece la fecha de emisión (iat) y la expiración (exp). Actualmente la
-     *   expiración está fijada a 30 minutos (1000 * 60 * 30 ms).
-     * - Añade un mapa de claims vacío. Si necesitas claims adicionales (roles,
-     *   permisos, etc.) agrégalos aquí.
-     * - Firma el token con HS256 usando la clave retornada por {@link #getSignedKey()}.
-     *
-     * Consideraciones de seguridad / diseño:
-     * - Tamaño de expiración: 30 minutos es razonable para tokens de acceso; si
-     *   necesitas refresh tokens implementa un flujo separado.
-     * - No incluir información sensible en los claims sin cifrarla.
-     *
-     * @param username nombre de usuario que se insertará como subject del token
-     * @return token JWT compacto (String)
+     * @param username El nombre del usuario que será el subject del token
+     * @param role El rol del usuario que se añadirá como claim personalizado
+     * @return String El token JWT generado en formato compacto
      */
-    public String generateToken(String username){
-        return Jwts.builder().
-                setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*30))
-                .addClaims(new HashMap<>())
-                .signWith(getSignedKey(), SignatureAlgorithm.HS256)
-                .compact();
+    public String generateToken(String username, String role) {
+        // Crea un HashMap vacío para almacenar los claims personalizados del token
+        HashMap<String, Object> claims = new HashMap<>();
+
+        // Añade el rol del usuario al mapa de claims con la clave "Role"
+        claims.put("Role", role);
+
+        // Construye el token JWT usando el builder pattern de Jwts
+        return Jwts.builder() // Inicia la construcción del token
+                .setSubject(username) // Establece el subject (usuario) del token
+                .setIssuedAt(new Date()) // Establece la fecha de emisión como el momento actual
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // Establece expiración: actual + 30 minutos (1000ms * 60s * 30min)
+                .addClaims(claims) // Añade los claims personalizados (el rol) al payload
+                .signWith(getSignedKey(), SignatureAlgorithm.HS256) // Firma el token con la clave secreta usando algoritmo HS256
+                .compact(); // Convierte el builder en un String JWT compacto (formato base64url)
     }
 
     /**
-     * Construye la clave secreta utilizada por jjwt para firmar y verificar.
+     * Obtiene la clave criptográfica para firmar/verificar tokens.
+     * Convierte el SECRET en una Key de Java usando el método de jjwt.
      *
-     * Detalles:
-     * - Utiliza {@link Keys#hmacShaKeyFor(byte[])} que valida/normaliza la clave
-     *   internamente.
-     * - Actualmente la implementación usa {@code SECRET.getBytes()}; si la clave está
-     *   codificada en Base64 o Hex, debe decodificarse explícitamente antes de
-     *   pasársela a este método (ej: {@code Base64.getDecoder().decode(secret)}).
-     *
-     * @return instancia de {@link Key} adecuada para HS256
+     * @return Key Objeto Key listo para usar en operaciones de firma/verificación
      */
     private Key getSignedKey() {
+        // Convierte el String SECRET a bytes usando el encoding por defecto de la plataforma
+        // y crea una clave HMAC adecuada para HS256
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
     /**
-     * Verifica la firma de un token JWT y extrae todos los claims si la verificación
-     * es exitosa.
+     * Verifica la firma de un token y extrae todos sus claims.
+     * Este método valida que el token sea válido (firma correcta, no expirado, bien formado).
      *
-     * Comportamiento / errores:
-     * - Si el token está mal formado, la firma es inválida o está expirado, jjwt
-     *   lanzará una excepción (p. ej. JwtException o alguna subclase). El llamador
-     *   debe manejar esas excepciones y mapearlas a respuestas HTTP apropiadas (401/403).
-     *
-     * @param token JWT en formato compact
-     * @return claims extraídos del token
+     * @param token El token JWT a verificar
+     * @return Claims Objeto con todos los claims contenidos en el token
      */
     public Claims verifySignatureAndExtractAllClaims(String token) {
-        return Jwts.
-                parserBuilder()
-                .setSigningKey(getSignedKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        // Construye un parser, establece la clave de verificación, parsea el token y obtiene el body
+        return Jwts.parserBuilder() // Inicia la construcción del parser
+                .setSigningKey(getSignedKey()) // Establece la misma clave secreta para verificar la firma
+                .build() // Construye el parser
+                .parseClaimsJws(token) // Parsea el token y valida la firma (lanza excepción si es inválido)
+                .getBody(); // Extrae y retorna el cuerpo (claims) del token
     }
 
     /**
-     * Extrae el nombre de usuario (subject) desde el token.
+     * Extrae el nombre de usuario (subject) del token.
      *
-     * @param token JWT válido
-     * @return subject (username) presente en el token
+     * @param token El token JWT
+     * @return String El username contenido en el subject del token
      */
-    public String extractUsername(String token){
-        return verifySignatureAndExtractAllClaims(token)
-                .getSubject();
+    public String extractUsername(String token) {
+        // Llama al método de verificación y extracción y obtiene el subject
+        return verifySignatureAndExtractAllClaims(token) // Obtiene todos los claims del token
+                .getSubject(); // Extrae específicamente el claim "sub" (subject)
     }
 
     /**
-     * Obtiene la fecha de expiración (claim exp) del token.
+     * Obtiene la fecha de expiración del token.
      *
-     * Nota: si el token está expirado, este método retornará la fecha pasada; la
-     * verificación de expiración debe ser realizada por {@link #isTokenExpired(String)}
-     * o por el manejador de excepciones de jjwt.
-     *
-     * @param token JWT
-     * @return fecha de expiración contenida en el token
+     * @param token El token JWT
+     * @return Date La fecha de expiración contenida en el claim "exp"
      */
-    public Date getExpiration(String token){
-        return verifySignatureAndExtractAllClaims(token).getExpiration();
+    public Date getExpiration(String token) {
+        // Extrae todos los claims y obtiene el de expiración
+        return verifySignatureAndExtractAllClaims(token) // Obtiene todos los claims del token
+                .getExpiration(); // Extrae específicamente el claim "exp" (expiration)
     }
 
     /**
-     * Indica si el token se encuentra expirado comparando el claim exp con la fecha actual.
+     * Verifica si el token ha expirado.
      *
-     * @param token JWT
-     * @return true si la fecha de expiración es anterior a ahora
+     * @param token El token JWT
+     * @return boolean true si el token está expirado, false si aún es válido
      */
-    public boolean isTokenExpired(String token){
-        return  getExpiration(token).before(new Date());
+    public boolean isTokenExpired(String token) {
+        // Compara la fecha de expiración con la fecha actual
+        return getExpiration(token) // Obtiene la fecha de expiración del token
+                .before(new Date()); // Retorna true si la expiración es anterior a ahora (está expirado)
     }
 }

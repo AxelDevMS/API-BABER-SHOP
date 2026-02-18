@@ -2,6 +2,7 @@ package ams.dev.api.barber_shop.mapper;
 
 import ams.dev.api.barber_shop.dto.employee.EmployeeRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
+import ams.dev.api.barber_shop.enums.RoleEnum;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,6 +48,7 @@ public class MapperEntity {
         userEntity.setUsername(employeeRequestDto.getUsername());
         userEntity.setPassword(employeeRequestDto.getPassword());
         userEntity.setIsActive(employeeRequestDto.getIsActive());
+        userEntity.setRole(RoleEnum.valueOf(employeeRequestDto.getRole()));
         return userEntity;
     }
 

@@ -49,7 +49,7 @@ public class UserController {
      * @param employeeRequestDto DTO con los datos del empleado a crear (username, password, isActive)
      * @return ResponseEntity con ApiResponseDto conteniendo mensaje de confirmación y HTTP 201
      */
-    @GetMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<ApiResponseDto> executeCreateEmployee(@RequestBody EmployeeRequestDto employeeRequestDto) {
         ApiResponseDto response = userService.executeCreateEmployee(employeeRequestDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);

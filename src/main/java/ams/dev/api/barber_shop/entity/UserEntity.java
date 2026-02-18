@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.entity;
 
+import ams.dev.api.barber_shop.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -74,4 +75,9 @@ public class UserEntity {
      */
     @Column(name = "is_active")
     private Boolean isActive;
+
+
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role;
 }

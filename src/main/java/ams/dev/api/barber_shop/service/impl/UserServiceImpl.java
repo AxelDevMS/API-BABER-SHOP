@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,179 +23,326 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
- * Implementación de la lógica de negocio para operaciones de Usuario.
+ * SERVICIO DE IMPLEMENTACIÓN DE USUARIOS
+ * ======================================
  *
- * Esta clase implementa dos interfaces principales:
+ * ¿QUÉ HACE ESTA CLASE?
+ * ---------------------
+ * Esta clase es el corazón de la lógica de negocio relacionada con usuarios en la aplicación.
+ * Implementa dos interfaces fundamentales:
  *
- * 1. UserService: Define operaciones CRUD de usuarios
- * 2. UserDetailsService: Requerido por Spring Security para cargar detalles de usuario
- *    durante la autenticación HTTP Basic
+ * 1. UserService: Define las operaciones CRUD y de negocio para usuarios
+ * 2. UserDetailsService: Interfaz de Spring Security para cargar usuarios durante la autenticación
  *
- * Responsabilidades:
- * - Crear nuevos usuarios con contraseña encriptada
- * - Recuperar usuarios por username desde la BD
- * - Proporcionar UserDetails para Spring Security
+ * PROPÓSITO PRINCIPAL:
+ * -------------------
+ * Gestionar todo el ciclo de vida de los usuarios en el sistema, desde su registro
+ * hasta su autenticación, actuando como puente entre la capa de persistencia (repositorios)
+ * y la capa de presentación (controladores), además de integrarse con Spring Security
+ * para la autenticación y autorización.
  *
- * Dependencias inyectadas:
- * - UserRepository: Acceso a datos de usuarios
- * - MapperEntity: Conversión DTO -> Entidad
- * - PasswordEncoder: Encriptación de contraseñas (BCrypt)
+ * RESPONSABILIDADES CLAVE:
+ * -----------------------
+ * 1. AUTENTICACIÓN DE USUARIOS:
+ *    - Valida credenciales (username/password) usando AuthenticationManager de Spring
+ *    - Genera tokens JWT para sesiones exitosas mediante JwtService
+ *    - Maneja errores de autenticación (usuario no encontrado, credenciales inválidas)
+ *
+ * 2. REGISTRO DE USUARIOS:
+ *    - Convierte DTOs de entrada a entidades (EmployeeRequestDto → UserEntity)
+ *    - Encripta contraseñas de forma segura usando BCrypt ANTES de persistir
+ *    - Guarda nuevos usuarios en la base de datos
+ *    - Retorna el ID generado (UUID) al cliente
+ *
+ * 3. CARGA DE USUARIOS PARA SPRING SECURITY:
+ *    - Implementa loadUserByUsername() requerido por UserDetailsService
+ *    - Consulta la BD por username y estado activo
+ *    - Construye objetos UserDetails con:
+ *      a) Username
+ *      b) Password encriptado
+ *      c) Authorities (rol + todos los permisos asociados al rol)
+ *    - Este método es INVOCADO AUTOMÁTICAMENTE por Spring Security durante:
+ *      - Autenticación HTTP Basic
+ *      - Validación de JWT en JwtFilter
+ *
+ * 4. CONSULTA DE USUARIOS:
+ *    - Busca usuarios por username (solo activos)
+ *    - Lanza UsernameNotFoundException si no existe (estándar de Spring Security)
+ *
+ * FLUJO DE TRABAJO TÍPICO:
+ * -----------------------
+ *
+ * CASO 1: REGISTRO DE NUEVO USUARIO (PUBLIC)
+ * -----------------------------------------
+ * 1. Cliente → POST /user/register → EmployeeRequestDto (username, password, isActive)
+ * 2. executeCreateEmployee() recibe el DTO
+ * 3. MapperEntity convierte DTO → UserEntity
+ * 4. PasswordEncoder encripta la contraseña (BCrypt)
+ * 5. UserRepository guarda en BD (genera UUID automático)
+ * 6. Retorna ApiResponseDto con ID generado
+ *
+ * CASO 2: AUTENTICACIÓN (PUBLIC)
+ * -----------------------------
+ * 1. Cliente → POST /user/login → AuthRequestDto (username, password)
+ * 2. authenticate() recibe credenciales
+ * 3. AuthenticationManager valida usando loadUserByUsername() (este mismo servicio)
+ * 4. Si válido → JwtService genera token JWT con username y rol
+ * 5. Retorna ApiResponseDto con token JWT
+ *
+ * CASO 3: CARGA DE USUARIO POR SPRING SECURITY (INTERNO)
+ * -----------------------------------------------------
+ * 1. Llamado automáticamente por:
+ *    - Filtro HTTP Basic (UsernamePasswordAuthenticationFilter)
+ *    - JwtFilter (después de validar token)
+ * 2. loadUserByUsername(username) busca en BD
+ * 3. Construye UserDetails con:
+ *    - Username
+ *    - Password encriptado
+ *    - Authorities: [ROLE_USER, READ, WRITE] (rol + permisos)
+ * 4. Spring Security usa esto para:
+ *    - Validar contraseña (HTTP Basic)
+ *    - Establecer contexto de seguridad
+ *    - Evaluar @PreAuthorize en controladores
+ *
+ * COMPONENTES QUE UTILIZA:
+ * -----------------------
+ * - UserRepository: Acceso a base de datos para operaciones CRUD
+ * - MapperEntity: Conversión entre DTOs y entidades
+ * - PasswordEncoder: Encriptación BCrypt de contraseñas
+ * - AuthenticationManager: Gestor de autenticación de Spring
+ * - JwtService: Generación de tokens JWT
+ *
+ * @see ams.dev.api.barber_shop.service.UserService
+ * @see org.springframework.security.core.userdetails.UserDetailsService
+ * @see ams.dev.api.barber_shop.repository.UserRepository
+ * @see ams.dev.api.barber_shop.security.jwt.JwtService
  */
 @Service
 public class UserServiceImpl implements UserService, UserDetailsService {
 
-    /**
-     * Repositorio JPA para operaciones de persistencia de usuarios
-     */
-    @Autowired
+    @Autowired // Inyección del repositorio JPA para operaciones de base de datos con usuarios
     private UserRepository userRepository;
 
-    /**
-     * Mapper para convertir DTOs a entidades y viceversa
-     */
-    @Autowired
+    @Autowired // Inyección del mapper para convertir entre DTOs y entidades
     private MapperEntity mapper;
 
-    /**
-     * Encoder para encriptar contraseñas de forma segura
-     * Implementación: BCryptPasswordEncoder
-     */
-    @Autowired
+    @Autowired // Inyección del encoder para encriptar contraseñas (BCryptPasswordEncoder)
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    @Lazy
+    @Autowired // Inyección del AuthenticationManager de Spring para validar credenciales
+    @Lazy // Lazy loading para evitar dependencias circulares con SecurityConfig
     private AuthenticationManager authenticationManager;
 
-    @Autowired
+    @Autowired // Inyección del servicio JWT para generar tokens después de autenticación exitosa
     private JwtService jwtService;
 
-
     /**
-     * Autentica un usuario y genera un token JWT si las credenciales son válidas.
+     * AUTENTICA UN USUARIO Y GENERA UN TOKEN JWT
+     * ==========================================
      *
-     * Flujo de ejecución:
-     * 1. Crea un token de autenticación con username y password proporcionados
-     * 2. Valida las credenciales contra la BD usando AuthenticationManager
-     * 3. Si la autenticación es exitosa, genera un token JWT
-     * 4. Retorna respuesta con el token o mensaje de error
+     * Este método maneja el login de usuarios, validando credenciales y generando
+     * un token JWT para sesiones autenticadas.
      *
-     * Detalles técnicos:
-     * - Se usa UsernamePasswordAuthenticationToken para encapsular las credenciales
-     * - AuthenticationManager valida contra UserDetailsService (este mismo servicio)
-     * - El token JWT se genera usando JwtService con el username autenticado
-     * - AuthenticationManager puede lanzar excepción si credenciales son inválidas
+     * FLUJO DETALLADO:
+     * ----------------
+     * 1. Recibe AuthRequestDto con username y password (texto plano)
+     * 2. Crea UsernamePasswordAuthenticationToken con las credenciales
+     * 3. AuthenticationManager.authenticate() valida:
+     *    a) Llama a loadUserByUsername() para obtener UserDetails
+     *    b) Compara password ingresado con hash almacenado usando PasswordEncoder
+     *    c) Verifica si la cuenta está activa/habilitada
+     * 4. Si autenticación es exitosa:
+     *    a) Extrae el primer authority (rol) de la lista
+     *    b) Limpia el prefijo "ROLE_" para obtener el nombre base del rol
+     *    c) Genera token JWT con username y rol
+     *    d) Retorna ApiResponseDto con el token
+     * 5. Si falla: Retorna mensaje de error genérico
      *
-     * Casos de éxito:
-     * - Username y password válidos → Token generado exitosamente
+     * EXCEPCIONES QUE PUEDE LANZAR (manejadas por Spring Security):
+     * ------------------------------------------------------------
+     * - UsernameNotFoundException: Usuario no existe en BD
+     * - BadCredentialsException: Contraseña incorrecta
+     * - DisabledException: Usuario deshabilitado (isActive = false)
+     * - LockedException: Cuenta bloqueada
      *
-     * Casos de error:
-     * - Username no existe o no está activo → UsernameNotFoundException
-     * - Password incorrecto → BadCredentialsException
-     * - Usuario deshabilitado → DisabledException
-     *
-     * @param authRequestDto DTO con username y password sin encriptar
-     * @return ApiResponseDto con mensaje de éxito incluyendo el token JWT,
-     *         o mensaje de error si la autenticación falló
-     * @throws UsernameNotFoundException si el usuario no existe o está inactivo
+     * @param authRequestDto DTO con credenciales: username y password (sin encriptar)
+     * @return ApiResponseDto con:
+     *         - Éxito: "Token generado: {jwt_token}"
+     *         - Error: "No se pudo generar el token"
      */
     @Override
     public ApiResponseDto authenticate(AuthRequestDto authRequestDto) {
+        // Intenta autenticar al usuario con las credenciales proporcionadas
+        // authenticationManager.authenticate() delegará en loadUserByUsername() automáticamente
         Authentication  authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        authRequestDto.getUsername(),
-                        authRequestDto.getPassword()
+                        authRequestDto.getUsername(), // Principal: username
+                        authRequestDto.getPassword()  // Credenciales: password en texto plano
                 )
         );
 
+        // Verifica si la autenticación fue exitosa
         if (authenticate.isAuthenticated()){
-            String token = jwtService.generateToken(authRequestDto.getUsername());
+            // Obtiene el primer authority de la lista (asumimos que es el rol)
+            // Ejemplo: "ROLE_ADMIN" → se limpia para obtener "ADMIN"
+            String role = authenticate
+                    .getAuthorities() // Obtiene Collection<? extends GrantedAuthority>
+                    .iterator() // Obtiene un iterador sobre las autoridades
+                    .next() // Toma la primera autoridad (el rol)
+                    .getAuthority() // Obtiene el string de la autoridad (ej: "ROLE_ADMIN")
+                    .replace("ROLE_",""); // Elimina el prefijo "ROLE_" para usar en el token
+
+            // Genera token JWT con username y rol (sin prefijo)
+            String token = jwtService.generateToken(authRequestDto.getUsername(), role);
+
+            // Retorna respuesta exitosa con el token
             return new ApiResponseDto("Token generado: "+token);
         }
+
+        // Si la autenticación falló por cualquier razón
         return new ApiResponseDto("No se pudo generar el token");
     }
 
     /**
-     * Crea un nuevo empleado/usuario en el sistema.
+     * CREA UN NUEVO EMPLEADO/USUARIO EN EL SISTEMA
+     * ============================================
      *
-     * Flujo de ejecución:
-     * 1. Convierte EmployeeRequestDto a UserEntity usando el mapper
-     * 2. Encripta la contraseña en texto plano usando BCryptPasswordEncoder
-     * 3. Persiste la entidad en la base de datos
-     * 4. Retorna un DTO con mensaje de éxito e ID generado (UUID)
+     * Este método maneja el registro de nuevos usuarios, asegurando que las
+     * contraseñas se almacenen de forma segura.
      *
-     * Consideraciones de seguridad:
-     * - La contraseña se encripta ANTES de guardar en BD
-     * - Se usa BCrypt con salt aleatorio para mayor seguridad
-     * - El ID se genera automáticamente como UUID
+     * FLUJO DETALLADO:
+     * ----------------
+     * 1. Recibe EmployeeRequestDto con datos del nuevo usuario
+     * 2. MapperEntity convierte DTO → UserEntity (mapea campos básicos)
+     * 3. Encripta la contraseña usando BCrypt ANTES de guardar
+     * 4. UserRepository.save() persiste la entidad:
+     *    - Genera automáticamente UUID como ID
+     *    - Establece timestamps de creación/actualización
+     * 5. Retorna ApiResponseDto con el ID generado
      *
-     * @param empolyeeRequestDto DTO con datos: username, password (sin encriptar), isActive
-     * @return ApiResponseDto con mensaje "Empleado Registrado Correctamente con id: {uuid}"
+     * CONSIDERACIONES DE SEGURIDAD:
+     * ----------------------------
+     * - La contraseña NUNCA se guarda en texto plano
+     * - BCrypt genera un salt aleatorio automáticamente
+     * - El factor de costo (strength) es configurable desde PasswordEncoder
+     * - El ID es UUID no secuencial (evita enumeración de usuarios)
+     *
+     * @param empolyeeRequestDto DTO con datos:
+     *                           - username: String único
+     *                           - password: String sin encriptar
+     *                           - isActive: Boolean (true/false)
+     * @return ApiResponseDto con mensaje: "Empleado Registrado Correctamente con id: {uuid}"
      */
     @Override
     public ApiResponseDto executeCreateEmployee(EmployeeRequestDto empolyeeRequestDto) {
-        // Mapear DTO a entidad
+        // PASO 1: Mapear DTO a entidad
+        // Convierte EmployeeRequestDto → UserEntity (copia username y isActive)
         UserEntity userEntity = mapper.toUser(empolyeeRequestDto);
 
-        // Encriptar la contraseña antes de guardar
+        // PASO 2: Encriptar contraseña
+        // Toma la contraseña en texto plano del DTO, la encripta y la asigna a la entidad
         userEntity.setPassword(passwordEncoder.encode(empolyeeRequestDto.getPassword()));
 
-        // Persistir en base de datos (genera ID automáticamente)
+        // PASO 3: Persistir en base de datos
+        // save() inserta el registro y retorna la entidad con el ID generado
         userEntity = userRepository.save(userEntity);
 
-        // Retornar respuesta con ID generado
+        // PASO 4: Retornar respuesta con el ID generado
+        // El ID es un UUID autogenerado por JPA/Hibernate
         return new ApiResponseDto("Empleado Registrado Correctamente con id: " + userEntity.getId());
     }
 
     /**
-     * Busca un usuario activo por su nombre de usuario.
+     * BUSCA UN USUARIO ACTIVO POR NOMBRE DE USUARIO
+     * =============================================
      *
-     * Flujo de ejecución:
-     * 1. Consulta la BD por username E isActive = true
-     * 2. Si no encuentra el usuario, lanza UsernameNotFoundException
-     * 3. Si encuentra, retorna la entidad
+     * Método auxiliar para obtener usuarios de la BD con validación de existencia.
      *
-     * Esta excepción es capturada por Spring Security durante la autenticación.
+     * FLUJO DETALLADO:
+     * ----------------
+     * 1. Busca en BD por username Y isActive = true
+     * 2. Si encuentra → retorna UserEntity
+     * 3. Si NO encuentra → lanza UsernameNotFoundException
      *
-     * @param username nombre de usuario a buscar
-     * @return UserEntity del usuario activo
+     * USO PRINCIPAL:
+     * -------------
+     * - loadUserByUsername() lo usa para cargar usuarios
+     * - Otros servicios pueden usarlo para validar existencia
+     *
+     * @param username nombre de usuario a buscar (case-sensitive)
+     * @return UserEntity usuario activo encontrado
      * @throws UsernameNotFoundException si no existe usuario activo con ese username
      */
     @Override
     public UserEntity getUserByUsername(String username) {
+        // Busca en repositorio por username y isActive=true
+        // orElseThrow: si el Optional está vacío, lanza la excepción
         return userRepository.findByUsernameAndIsActive(username, true)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
     }
 
     /**
-     * Carga los detalles de un usuario para Spring Security durante la autenticación.
+     * CARGA DETALLES DE USUARIO PARA SPRING SECURITY
+     * ==============================================
      *
-     * Este método es llamado por Spring Security durante el proceso de autenticación HTTP Basic:
-     * 1. Extrae el username del header Authorization de la solicitud
-     * 2. Llama este método para cargar los detalles del usuario
-     * 3. Spring Security compara la contraseña del request con la almacenada
+     * Este método es el corazón de la integración con Spring Security.
+     * Es INVOCADO AUTOMÁTICAMENTE por el framework durante:
      *
-     * Construcción de UserDetails:
-     * - username: del usuario buscado
-     * - password: contraseña encriptada (Spring Security la compara con la del request)
-     * - authorities: lista vacía (sin roles/permisos específicos)
+     * 1. Autenticación HTTP Basic:
+     *    - UsernamePasswordAuthenticationFilter extrae credenciales del header
+     *    - Llama a loadUserByUsername() para obtener UserDetails
+     *    - Compara la contraseña del request con la almacenada
      *
-     * @param username nombre de usuario a cargar
-     * @return UserDetails con credenciales para validar en Spring Security
+     * 2. Validación de JWT:
+     *    - JwtFilter extrae username del token
+     *    - Llama a loadUserByUsername() para cargar el usuario completo
+     *    - Establece la autenticación en SecurityContext
+     *
+     * CONSTRUCCIÓN DE UserDetails:
+     * ---------------------------
+     * - username: El identificador único del usuario
+     * - password: El hash BCrypt almacenado en BD
+     * - authorities: Lista completa de:
+     *   a) El rol del usuario (ej: ROLE_ADMIN)
+     *   b) TODOS los permisos asociados a ese rol (ej: READ, WRITE, DELETE)
+     *
+     * Esto permite:
+     * - Control de acceso a nivel de método con @PreAuthorize
+     * - Validación de permisos específicos en controladores/servicios
+     * - Auditoría y logging de acciones por usuario
+     *
+     * @param username nombre de usuario a cargar (desde request o token)
+     * @return UserDetails objeto con todos los datos para autenticación/autorización
      * @throws UsernameNotFoundException si el usuario no existe o no está activo
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Obtiene la entidad del usuario desde BD (o lanza excepción si no existe)
         UserEntity userEntity = getUserByUsername(username);
 
+        // Construye lista de autoridades (GrantedAuthority) para el usuario
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        // 1. Agrega el ROL como autoridad (ej: "ROLE_ADMIN")
+        authorities.add(new SimpleGrantedAuthority(userEntity.getRole().name()));
+
+        // 2. Agrega TODOS los PERMISOS asociados al rol como autoridades individuales
+        //    Esto permite control granular con @PreAuthorize("hasAuthority('READ')")
+        userEntity.getRole().getPermissions().forEach(permissionEnum -> {
+            authorities.add(new SimpleGrantedAuthority(permissionEnum.name()));
+        });
+
+        // Construye y retorna UserDetails usando el builder de Spring Security
         return User
-                .builder()
-                .username(userEntity.getUsername())
-                .password(userEntity.getPassword())
-                .authorities(Collections.emptyList())
-                .build();
+                .builder() // User.builder() de org.springframework.security.core.userdetails.User
+                .username(userEntity.getUsername()) // Nombre de usuario
+                .password(userEntity.getPassword()) // Password YA encriptado (BCrypt)
+                .authorities(authorities) // Lista de roles + permisos
+                .build(); // Construye el objeto UserDetails
     }
 }

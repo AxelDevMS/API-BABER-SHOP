@@ -70,4 +70,6 @@ public class EmployeeRequestDto {
      * Ejemplo: true (nuevo empleado activo)
      */
     private Boolean isActive;
+
+    private String role;
 }
