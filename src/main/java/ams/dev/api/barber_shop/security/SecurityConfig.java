@@ -93,6 +93,8 @@ public class SecurityConfig {
                         auth
                                 .requestMatchers("/user/**") // Define patrones de URL específicos
                                 .permitAll() // Permite acceso sin autenticación a todas las rutas que comiencen con /user/**
+                                .requestMatchers("/permission/**")
+                                .permitAll()
                                 .anyRequest() // Cualquier otra petición no cubierta por reglas anteriores
                                 .authenticated() // Requiere que el usuario esté autenticado
                 )
