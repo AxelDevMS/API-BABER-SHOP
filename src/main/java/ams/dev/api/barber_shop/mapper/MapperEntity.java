@@ -1,11 +1,14 @@
 package ams.dev.api.barber_shop.mapper;
 
 import ams.dev.api.barber_shop.dto.PermissionRequestDto;
+import ams.dev.api.barber_shop.dto.RoleRequestDto;
 import ams.dev.api.barber_shop.dto.UserRequestDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class MapperEntity {
@@ -36,5 +39,24 @@ public class MapperEntity {
         permissionEntity.setDescription(permissionRequestDto.getDescription());
         return permissionEntity;
     }
+
+        /*
+    ===============================================================
+        MÉTODO PARA CONVERTIR DE DTO A ENTITY PARA ROLES
+    ===============================================================
+     */
+    public RoleEntity toRole(RoleRequestDto roleRequestDto){
+        RoleEntity roleEntity = new RoleEntity();
+        roleEntity.setName(roleRequestDto.getName());
+        roleEntity.setDescription(roleRequestDto.getDescription());
+
+        List<PermissionEntity> permissionEntities = roleRequestDto.getPermissions().stream()
+                .map(this::toPermission)
+                .toList();
+
+        roleEntity.setPermissions(permissionEntities);
+        return roleEntity;
+    }
+
 
 }

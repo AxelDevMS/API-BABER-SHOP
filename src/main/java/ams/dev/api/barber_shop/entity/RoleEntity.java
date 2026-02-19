@@ -26,14 +26,13 @@ public class RoleEntity {
 
     private String description;
 
-    @Column(name = "is_system_role")
-    private Boolean isSystemRole;
-
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @ManyToMany
-    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})  // Agregar cascade
+    @JoinTable(name = "role_permission",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private List<PermissionEntity> permissions;
 
 
