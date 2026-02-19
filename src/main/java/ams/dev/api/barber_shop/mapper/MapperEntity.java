@@ -1,7 +1,7 @@
 package ams.dev.api.barber_shop.mapper;
 
 import ams.dev.api.barber_shop.dto.PermissionRequestDto;
-import ams.dev.api.barber_shop.dto.user.UserRequestDto;
+import ams.dev.api.barber_shop.dto.UserRequestDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.entity.UserEntity;

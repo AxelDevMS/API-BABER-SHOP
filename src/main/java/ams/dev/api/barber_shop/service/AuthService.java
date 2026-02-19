@@ -2,7 +2,7 @@ package ams.dev.api.barber_shop.service;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.AuthRequestDto;
-import ams.dev.api.barber_shop.dto.user.UserRequestDto;
+import ams.dev.api.barber_shop.dto.UserRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import ams.dev.api.barber_shop.service.impl.AuthServiceImpl;
 

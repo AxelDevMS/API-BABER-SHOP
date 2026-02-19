@@ -1,4 +1,4 @@
-package ams.dev.api.barber_shop.dto.user;
+package ams.dev.api.barber_shop.dto;
 
 import lombok.Data;
 
