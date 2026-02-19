@@ -95,6 +95,8 @@ public class SecurityConfig {
                                 .permitAll() // Permite acceso sin autenticación a todas las rutas que comiencen con /user/**
                                 .requestMatchers("/permission/**")
                                 .permitAll()
+                                .requestMatchers("/role/**")
+                                .permitAll()
                                 .anyRequest() // Cualquier otra petición no cubierta por reglas anteriores
                                 .authenticated() // Requiere que el usuario esté autenticado
                 )
