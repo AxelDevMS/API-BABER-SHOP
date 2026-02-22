@@ -12,5 +12,25 @@ spring:
     restart:
       enabled: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 465 #587 o 465 o 25
+    username: amsdevtech@gmail.com
+    password: mcfryptbdhpnsucm
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true  # SSL directo en lugar de STARTTLS
+            trust: smtp.gmail.com
+        connectiontimeout: 10000
+        timeout: 10000
+app:
+  mail:
+    from: amsdevtech@gmail.com
+    fromName: Barber Shop APP
+  base-url: http://localhost:8080
+
 server:
   port: 8080
