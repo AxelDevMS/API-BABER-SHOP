@@ -8,7 +8,6 @@ import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.exceptions.ResourceNotFoundException;
 import ams.dev.api.barber_shop.mapper.request.RoleRequestMapper;
 import ams.dev.api.barber_shop.mapper.response.RoleResponseMapper;
-import ams.dev.api.barber_shop.projection.PermissionBasicProjection;
 import ams.dev.api.barber_shop.repository.RoleRespository;
 import ams.dev.api.barber_shop.service.PermissionService;
 import ams.dev.api.barber_shop.service.RoleService;
