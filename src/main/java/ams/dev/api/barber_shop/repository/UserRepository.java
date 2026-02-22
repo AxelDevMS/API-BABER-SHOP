@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity,String> {
 
     Optional<UserEntity> findByUsernameAndIsActive(String username, Boolean isActive);
+
+    Optional<UserEntity> findByUsername(String username);
+
+    Optional<UserEntity> findByUsernameAndIdNot(String username, String id);
 }
