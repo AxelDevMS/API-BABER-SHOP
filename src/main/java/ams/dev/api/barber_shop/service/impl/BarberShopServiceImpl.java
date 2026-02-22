@@ -13,7 +13,9 @@ import ams.dev.api.barber_shop.mapper.request.BarberShopRequestMapper;
 import ams.dev.api.barber_shop.mapper.response.BarberShopResponseMapper;
 import ams.dev.api.barber_shop.repository.BarberShopRepository;
 import ams.dev.api.barber_shop.service.BarberShopService;
+import ams.dev.api.barber_shop.service.EmailService;
 import ams.dev.api.barber_shop.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +36,11 @@ public class BarberShopServiceImpl implements BarberShopService {
     @Autowired
     private BarberShopResponseMapper barberShopResponseMapper;
 
+    @Autowired
+    private EmailService emailService;
 
+
+    @Transactional
     @Override
     public ApiResponseDto executeCreateBarberShop(BarberShopRequestDto barberShopRequestDto) {
         UserEntity userEntity = this.userService.executeCreateUser(barberShopRequestDto.getUser());
@@ -45,6 +51,13 @@ public class BarberShopServiceImpl implements BarberShopService {
         barberShopEntity.setStatus(BarberShopStatus.ACTIVE);
 
         barberShopEntity = this.barberShopRepository.save(barberShopEntity);
+
+        emailService.sendEmailCredentialsAcces(
+                userEntity.getEmail(),
+                userEntity.getName()+" "+userEntity.getLastName(),
+                userEntity.getEmail(),
+                barberShopRequestDto.getUser().getPassword()
+        );
         return new ApiResponseDto("Barbería registrada con éxito con id: " + barberShopEntity.getId());
     }
 
