@@ -8,11 +8,14 @@ import ams.dev.api.barber_shop.mapper.request.UserRequestMapper;
 import ams.dev.api.barber_shop.repository.UserRepository;
 import ams.dev.api.barber_shop.security.jwt.JwtService;
 import ams.dev.api.barber_shop.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * SERVICIO DE IMPLEMENTACIÓN DE USUARIOS
@@ -172,6 +176,8 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
      *         - Éxito: "Token generado: {jwt_token}"
      *         - Error: "No se pudo generar el token"
      */
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
     @Override
     public ApiResponseDto authenticate(AuthRequestDto authRequestDto) {
         // Intenta autenticar al usuario con las credenciales proporcionadas
@@ -187,12 +193,22 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
         if (authenticate.isAuthenticated()){
             // Obtiene el primer authority de la lista (asumimos que es el rol)
             // Ejemplo: "ROLE_ADMIN" → se limpia para obtener "ADMIN"
-            String role = authenticate
+            /*String role = authenticate
                     .getAuthorities() // Obtiene Collection<? extends GrantedAuthority>
                     .iterator() // Obtiene un iterador sobre las autoridades
                     .next() // Toma la primera autoridad (el rol)
                     .getAuthority() // Obtiene el string de la autoridad (ej: "ROLE_ADMIN")
-                    .replace("ROLE_",""); // Elimina el prefijo "ROLE_" para usar en el token
+                    .replace("ROLE_",""); // Elimina el prefijo "ROLE_" para usar en el token*/
+
+            String role = authenticate.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
+                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .findFirst()
+                    .map(auth -> auth.replace("ROLE_", ""))
+                    .orElse("USER"); // Valor por defecto
+
+            LOGGER.info("Rol encontrado: {}", role);
+
 
             // Genera token JWT con username y rol (sin prefijo)
             String token = jwtService.generateToken(authRequestDto.getUsername(), role);
@@ -326,13 +342,17 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
         // 1. Agrega el ROL como autoridad (ej: "ROLE_ADMIN")
-        authorities.add(new SimpleGrantedAuthority(userEntity.getRole().getName()));
+        authorities.add(new SimpleGrantedAuthority("ROLE_"+userEntity.getRole().getName()));
+        LOGGER.info("Rol agregado: ROLE_{}", userEntity.getRole().getName());
 
         // 2. Agrega TODOS los PERMISOS asociados al rol como autoridades individuales
         //    Esto permite control granular con @PreAuthorize("hasAuthority('READ')")
-        userEntity.getRole().getPermissions().forEach(permissionEnum -> {
-            authorities.add(new SimpleGrantedAuthority(permissionEnum.getName()));
+        userEntity.getRole().getPermissions().forEach(permission -> {
+            authorities.add(new SimpleGrantedAuthority(permission.getName()));
+            LOGGER.info("Permiso agregado: {}", permission.getName());
         });
+
+        LOGGER.info("Autoridades completas: {}", authorities);
 
         // Construye y retorna UserDetails usando el builder de Spring Security
         return User

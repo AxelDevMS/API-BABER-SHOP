@@ -107,7 +107,6 @@ import java.util.List;
  */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-
     @Autowired // Inyección automática del servicio JWT para validación y extracción de claims
     private JwtService jwtService;
 

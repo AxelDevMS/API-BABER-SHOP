@@ -19,7 +19,6 @@ public class JwtService {
     // Formato actual: Representación hexadecimal de 64 caracteres
     // WARNING: En producción esto debería venir de variables de entorno o un secrets manager
     public static final String SECRET = "cfe2e7df460bf68cbde50fb23f0b4961523e49fc51cd0f3d9d69971d5a4e960f";
-
     /**
      * Genera un nuevo token JWT para un usuario específico con su rol.
      *
