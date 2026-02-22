@@ -63,6 +63,8 @@ public class BarberShopRequestDto implements Serializable {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime closingTime;
 
+    private String timezone;
+
     @NotNull(message = "el usuario no puede ser nulo")
     @Valid
     private UserRequestDto user;

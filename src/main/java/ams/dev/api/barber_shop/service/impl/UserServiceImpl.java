@@ -1,6 +1,7 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.UserRequestDto;
+import ams.dev.api.barber_shop.dto.UserResponseDto;
 import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -55,6 +57,11 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity = this.userRepository.save(userEntity);
         return userEntity;
+    }
+
+    @Override
+    public List<UserResponseDto> executeUsersByBarberShopId(String barberShopId) {
+        return this.userRepository.findAllUserByBarberShopId(barberShopId);
     }
 
     private void validateDuplicatedUser(UserRequestDto userRequestDto, String excludeId){
