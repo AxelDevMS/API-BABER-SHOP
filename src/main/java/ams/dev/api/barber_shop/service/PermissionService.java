@@ -4,8 +4,6 @@ import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.PermissionRequestDto;
 import ams.dev.api.barber_shop.dto.PermissionResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
-import ams.dev.api.barber_shop.entity.RoleEntity;
-import ams.dev.api.barber_shop.projection.PermissionBasicProjection;
 import jakarta.validation.Valid;
 
 import java.util.List;
