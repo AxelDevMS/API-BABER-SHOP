@@ -4,13 +4,17 @@ import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.PermissionRequestDto;
 import ams.dev.api.barber_shop.dto.PermissionResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
+import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.exceptions.ResourceNotFoundException;
-import ams.dev.api.barber_shop.mapper.MapperDto;
-import ams.dev.api.barber_shop.mapper.MapperEntity;
+import ams.dev.api.barber_shop.mapper.request.PermissionRequestMapper;
+import ams.dev.api.barber_shop.mapper.response.PermissionResponseMapper;
+import ams.dev.api.barber_shop.projection.PermissionBasicProjection;
 import ams.dev.api.barber_shop.repository.PermissionRepository;
 import ams.dev.api.barber_shop.service.PermissionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,17 +27,21 @@ public class PermissionServiceImpl implements PermissionService {
     private PermissionRepository permissionRepository;
 
     @Autowired
-    private MapperEntity mapperEntity;
+    private PermissionRequestMapper permissionRequestMapper;
 
     @Autowired
-    private MapperDto mapperDto;
+    private PermissionResponseMapper permissionResponseMapper;
+
+    private static  final Logger LOGGER = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
     @Override
     public ApiResponseDto executeCreatePermission(PermissionRequestDto permissionRequestDto) {
         // Validar duplicados antes de crear
         validateDuplicatePermission(permissionRequestDto, null);
 
-        PermissionEntity permissionSaved = this.mapperEntity.toPermission(permissionRequestDto);
+        PermissionEntity permissionSaved = this.permissionRequestMapper.toEntity(permissionRequestDto);
+        permissionSaved.setIsDeleted(false);
+        permissionSaved.setIsActive(true);
         permissionSaved = this.permissionRepository.save(permissionSaved);
 
         return new ApiResponseDto("Permiso registrado con éxito con id: " + permissionSaved.getId());
@@ -47,7 +55,7 @@ public class PermissionServiceImpl implements PermissionService {
         if (permission.isEmpty())
             throw new ResourceNotFoundException("Permiso","id", id);
 
-        return this.mapperDto.toPermission(permission.get());
+        return this.permissionResponseMapper.toDto(permission.get());
     }
 
     @Override
@@ -57,7 +65,7 @@ public class PermissionServiceImpl implements PermissionService {
             throw new ResourceNotFoundException("No hay registros en el sistema");
 
         return permissionEntityList.stream()
-                .map(permissionEntity -> this.mapperDto.toPermission(permissionEntity))
+                .map(permissionEntity -> this.permissionResponseMapper.toDto(permissionEntity))
                 .toList();
     }
 
@@ -83,14 +91,30 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public void executeDeletePermission(String id) {
-        validateId(id);
+        this.validateId(id);
 
         PermissionEntity permission = this.permissionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Permiso", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol", "id", id));
 
-        this.permissionRepository.delete(permission);
+        permission.setIsDeleted(true);
+
+        this.permissionRepository.save(permission);
     }
 
+    @Override
+    public List<PermissionEntity> findAllPermissionsIds(List<String> ids) {
+        List<PermissionEntity> permissions = this.permissionRepository.findAllByIdIn(ids);
+
+        if (permissions.isEmpty())
+            throw new ResourceNotFoundException("No se encontraron permisos para los IDs proporcionados");
+
+        return permissions;
+    }
+
+    @Override
+    public List<PermissionResponseDto> findAllPermissionsByRoleId(String roleId) {
+        return this.permissionRepository.findBasicDtoByRoleId(roleId);
+    }
 
     // Métodos privados de validación
     private void validateId(String id) {
