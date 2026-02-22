@@ -1,25 +1,23 @@
 package ams.dev.api.barber_shop.service.impl;
 
-import ams.dev.api.barber_shop.dto.ApiResponseDto;
-import ams.dev.api.barber_shop.dto.RoleRequestDto;
-import ams.dev.api.barber_shop.dto.RoleResponseDto;
+import ams.dev.api.barber_shop.dto.*;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.exceptions.ResourceNotFoundException;
-import ams.dev.api.barber_shop.mapper.MapperDto;
-import ams.dev.api.barber_shop.mapper.MapperEntity;
+import ams.dev.api.barber_shop.mapper.request.RoleRequestMapper;
+import ams.dev.api.barber_shop.mapper.response.RoleResponseMapper;
+import ams.dev.api.barber_shop.projection.PermissionBasicProjection;
 import ams.dev.api.barber_shop.repository.RoleRespository;
+import ams.dev.api.barber_shop.service.PermissionService;
 import ams.dev.api.barber_shop.service.RoleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -28,18 +26,33 @@ public class RoleServiceImpl implements RoleService {
     private RoleRespository roleRespository;
 
     @Autowired
-    private MapperEntity mapperEntity;
+    private PermissionService permissionService;
 
     @Autowired
-    private MapperDto mapperDto;
+    private RoleRequestMapper roleRequestMapper;
+
+    @Autowired
+    private RoleResponseMapper roleResponseMapper;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoleServiceImpl.class);
 
     @Override
     public ApiResponseDto executeCreateRole(RoleRequestDto roleRequestDto) {
         this.validateDuplicatedRole(roleRequestDto,null);
 
-        RoleEntity roleEntity = this.mapperEntity.toRole(roleRequestDto);
+        List<String> permissionIds = roleRequestDto.getPermissions().stream()
+                .map(PermissionRequestDto::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        List<PermissionEntity> permissions = this.permissionService.findAllPermissionsIds(permissionIds);
+
+
+        RoleEntity roleEntity = this.roleRequestMapper.toEntity(roleRequestDto);
         roleEntity.setName(this.normalizeRoleName(roleEntity.getName()));
         roleEntity.setIsDeleted(false);
+        roleEntity.setPermissions(permissions);
 
         roleEntity = this.roleRespository.save(roleEntity);
 
@@ -53,7 +66,14 @@ public class RoleServiceImpl implements RoleService {
             throw  new ResourceNotFoundException("No hay registros en el sistema");
 
         return roleEntities.stream()
-                .map(role -> this.mapperDto.toRole(role))
+                .map(role -> {
+                    // Obtener permisos para este rol
+                    List<PermissionResponseDto> permissions = this.permissionService
+                            .findAllPermissionsByRoleId(role.getId());
+
+                    // Convertir rol a DTO con sus permisos
+                    return this.roleResponseMapper.toDto(role, permissions);
+                })
                 .toList();
     }
 
@@ -62,10 +82,13 @@ public class RoleServiceImpl implements RoleService {
         this.validateId(id);
         Optional<RoleEntity> role =  this.roleRespository.findById(id);
 
+        List<PermissionResponseDto> permissions = this.permissionService.findAllPermissionsByRoleId(id);
+
         if (role.isEmpty())
             throw new ResourceNotFoundException("Rol","id", id);
 
-        return this.mapperDto.toRole(role.get());
+
+        return this.roleResponseMapper.toDto(role.get(),permissions);
     }
 
     @Override
@@ -81,15 +104,25 @@ public class RoleServiceImpl implements RoleService {
         role.setDescription(roleRequestDto.getDescription());
 
 
-        List<PermissionEntity> permissionEntities = roleRequestDto.getPermissions().stream()
-                .map(this.mapperEntity::toPermission)
-                .collect(Collectors.toList());
+        List<String> permissionIds = roleRequestDto.getPermissions().stream()
+                .map(PermissionRequestDto::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
-        role.setPermissions(permissionEntities);
+        List<PermissionEntity> permissions = this.permissionService.findAllPermissionsIds(permissionIds);
+
+        role.setPermissions(permissions);
 
         role = this.roleRespository.save(role);
 
         return new ApiResponseDto("Rol actualizado con éxito con id: " + role.getId());
+    }
+
+    @Override
+    public RoleEntity findRoleById(String id) {
+        return roleRespository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol", "id", id));
     }
 
     @Override
