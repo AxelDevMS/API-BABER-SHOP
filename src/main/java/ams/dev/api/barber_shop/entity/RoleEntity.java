@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -29,10 +30,13 @@ public class RoleEntity {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})  // Agregar cascade
-    @JoinTable(name = "role_permission",
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_permission",
             joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id"))
+            inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    @ToString.Exclude
     private List<PermissionEntity> permissions;
 
 
@@ -42,6 +46,6 @@ public class RoleEntity {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     private List<UserEntity> users = new ArrayList<>();
 }

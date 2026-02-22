@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -29,7 +30,14 @@ public class PermissionEntity {
 
     private String action;
 
-    @ManyToMany(mappedBy = "permissions")
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<RoleEntity> roles;
 
     @CreationTimestamp

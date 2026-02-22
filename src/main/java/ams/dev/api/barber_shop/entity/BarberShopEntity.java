@@ -43,11 +43,11 @@ public class BarberShopEntity {
     private String logoUrl;
 
     @Column(name = "opening_time")
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime openingTime;
 
     @Column(name = "closing_time")
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime closingTime;
 
     private String timezone;
@@ -55,8 +55,12 @@ public class BarberShopEntity {
     @Enumerated(EnumType.STRING)
     private BarberShopStatus status;
 
-    @ManyToMany
-    @JoinTable(name = "user_barbershop", joinColumns = @JoinColumn(name = "barbershop_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_barbershop",
+            joinColumns = @JoinColumn(name = "barbershop_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     private List<UserEntity> users;
 
     @CreationTimestamp

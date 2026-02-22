@@ -67,11 +67,11 @@ public class UserEntity {
 
     //@Column(name = "role")
     //@Enumerated(EnumType.STRING)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private RoleEntity role;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     private List<BarberShopEntity> barberShops;
 
     @CreationTimestamp
