@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, Helvetica, sans-serif;">
+<!-- Tabla principal centrada (funciona en todos los clientes) -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f1f5f9; width: 100%;">
+    <tr>
+        <td align="center" style="padding: 20px 10px;">
+            <!-- Contenedor principal -->
+            <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-collapse: separate;">
+
+                <!-- Header simple -->
+                <tr>
+                    <td style="padding: 30px 25px 15px 25px;">
+                        <h1 style="margin: 0; color: #0f172a; font-size: 24px; font-weight: 600; font-family: Arial, Helvetica, sans-serif;">Bienvenido a la plataforma</h1>
+                        <p style="margin: 8px 0 0 0; color: #475569; font-size: 15px; line-height: 1.5;">Tu cuenta ha sido creada exitosamente</p>
+                    </td>
+                </tr>
+
+                <!-- Contenido -->
+                <tr>
+                    <td style="padding: 0 25px 25px 25px;">
+
+                        <!-- Saludo -->
+                        <p style="margin: 0 0 15px 0; color: #334155; font-size: 15px; line-height: 1.6;">
+                            Hola <strong style="color: #0f172a; font-weight: 600;" th:text="${nombre}">Naomi Martínez</strong>,
+                        </p>
+
+                        <!-- Sección de credenciales con borde simple -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin: 20px 0; border-collapse: separate;">
+                            <tr>
+                                <td style="padding: 20px;">
+
+                                    <!-- Título de sección -->
+                                    <p style="margin: 0 0 15px 0; color: #475569; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">DATOS DE ACCESO</p>
+
+                                    <!-- Usuario -->
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 12px;">
+                                        <tr>
+                                            <td width="100" style="color: #64748b; font-size: 14px; padding: 5px 0;">Usuario:</td>
+                                            <td style="color: #0f172a; font-size: 14px; font-family: 'Courier New', monospace; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-weight: 500;" th:text="${username}">asmtel2001@gmail.com</td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Contraseña -->
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 15px;">
+                                        <tr>
+                                            <td width="100" style="color: #64748b; font-size: 14px; padding: 5px 0;">Contraseña:</td>
+                                            <td style="color: #0f172a; font-size: 14px; font-family: 'Courier New', monospace; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-weight: 500;" th:text="${password}">Amsupp21!</td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Nota de seguridad -->
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px;">
+                                        <tr>
+                                            <td style="padding: 12px; color: #b45309; font-size: 13px; line-height: 1.5;">
+                                                ⚠️ Por seguridad, cambia tu contraseña después del primer acceso
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Botones -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 25px 0;">
+                            <tr>
+                                <td align="center">
+                                    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                                        <tr>
+                                            <td style="padding: 0 5px;">
+                                                <a th:href="${loginUrl}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 500;">Iniciar sesión</a>
+                                            </td>
+                                            <td style="padding: 0 5px;">
+                                                <a th:href="${resetPasswordUrl}" style="display: inline-block; background-color: #ffffff; color: #334155; text-decoration: none; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 500; border: 1px solid #cbd5e1;">Cambiar contraseña</a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Enlaces -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin: 20px 0;">
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <p style="margin: 0 0 15px 0; color: #475569; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">ENLACES DE ACCESO</p>
+
+                                    <!-- Enlace 1 -->
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
+                                        <tr>
+                                            <td width="20" style="color: #cbd5e1; font-size: 16px; vertical-align: top;">•</td>
+                                            <td style="padding-bottom: 10px;">
+                                                <a th:href="${baseUrl}" style="color: #2563eb; text-decoration: none; font-size: 14px; border-bottom: 1px dotted #cbd5e1;" th:text="${baseUrl}">http://localhost:8080</a>
+                                                <span style="color: #64748b; font-size: 13px; margin-left: 8px;">Principal</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Enlace 2 -->
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
+                                        <tr>
+                                            <td width="20" style="color: #cbd5e1; font-size: 16px; vertical-align: top;">•</td>
+                                            <td style="padding-bottom: 10px;">
+                                                <a th:href="${loginUrl}" style="color: #2563eb; text-decoration: none; font-size: 14px; border-bottom: 1px dotted #cbd5e1;" th:text="${loginUrl}">http://localhost:8080/login</a>
+                                                <span style="color: #64748b; font-size: 13px; margin-left: 8px;">Login</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Enlace 3 -->
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="20" style="color: #cbd5e1; font-size: 16px; vertical-align: top;">•</td>
+                                            <td>
+                                                <a th:href="${resetPasswordUrl}" style="color: #2563eb; text-decoration: none; font-size: 14px; border-bottom: 1px dotted #cbd5e1;" th:text="${resetPasswordUrl}">http://localhost:8080/reset-password</a>
+                                                <span style="color: #64748b; font-size: 13px; margin-left: 8px;">Recuperar</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Contacto -->
+                        <p style="margin: 25px 0 15px 0; color: #475569; font-size: 14px; line-height: 1.6;">
+                            ¿Tienes preguntas? <strong style="color: #0f172a; font-weight: 600;">contáctanos</strong> y te ayudaremos.
+                        </p>
+
+                        <!-- Línea separadora -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="height: 1px; background-color: #e2e8f0; font-size: 0; line-height: 0;">&nbsp;</td>
+                            </tr>
+                        </table>
+
+                        <!-- Footer -->
+                        <p style="margin: 20px 0 0 0; color: #94a3b8; font-size: 12px; line-height: 1.6;">
+                            Este es un correo automático, por favor no respondas a este mensaje.<br>
+                            <span style="color: #cbd5e1;">© 2024 Barber Shop APP · Todos los derechos reservados</span>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
