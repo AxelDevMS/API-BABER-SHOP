@@ -18,6 +18,6 @@ public class AuthController {
 
     @GetMapping("/hi")
     public String hi() {
-        return "Hi, World!";
+        return "Hi";
     }
 }
