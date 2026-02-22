@@ -7,12 +7,13 @@ import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.mapper.request.UserRequestMapper;
 import ams.dev.api.barber_shop.repository.UserRepository;
-import ams.dev.api.barber_shop.service.PermissionService;
 import ams.dev.api.barber_shop.service.RoleService;
 import ams.dev.api.barber_shop.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -27,10 +28,11 @@ public class UserServiceImpl implements UserService {
     private RoleService roleService;
 
     @Autowired
-    private PermissionService permissionService;
+    private UserRequestMapper userRequestMapper;
 
     @Autowired
-    private UserRequestMapper userRequestMapper;
+    private PasswordEncoder passwordEncoder;
+
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -50,6 +52,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setIsActive(true);
         userEntity.setIsDeleted(false);
         userEntity.setRole(role);
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity = this.userRepository.save(userEntity);
         return userEntity;
     }
