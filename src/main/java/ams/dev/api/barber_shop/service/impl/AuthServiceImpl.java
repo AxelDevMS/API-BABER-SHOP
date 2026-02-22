@@ -4,7 +4,7 @@ import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.AuthRequestDto;
 import ams.dev.api.barber_shop.dto.UserRequestDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
-import ams.dev.api.barber_shop.mapper.MapperEntity;
+import ams.dev.api.barber_shop.mapper.request.UserRequestMapper;
 import ams.dev.api.barber_shop.repository.UserRepository;
 import ams.dev.api.barber_shop.security.jwt.JwtService;
 import ams.dev.api.barber_shop.service.AuthService;
@@ -126,7 +126,7 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     private UserRepository userRepository;
 
     @Autowired // Inyección del mapper para convertir entre DTOs y entidades
-    private MapperEntity mapper;
+    private UserRequestMapper userRequestMapper;
 
     @Autowired // Inyección del encoder para encriptar contraseñas (BCryptPasswordEncoder)
     private PasswordEncoder passwordEncoder;
@@ -239,7 +239,7 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     public ApiResponseDto executeCreateEmployee(UserRequestDto empolyeeRequestDto) {
         // PASO 1: Mapear DTO a entidad
         // Convierte EmployeeRequestDto → UserEntity (copia username y isActive)
-        UserEntity userEntity = mapper.toUser(empolyeeRequestDto);
+        UserEntity userEntity = userRequestMapper.toEntity(empolyeeRequestDto);
 
         // PASO 2: Encriptar contraseña
         // Toma la contraseña en texto plano del DTO, la encripta y la asigna a la entidad

@@ -97,6 +97,8 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/role/**")
                                 .permitAll()
+                                .requestMatchers("/shop/**")
+                                .permitAll()
                                 .anyRequest() // Cualquier otra petición no cubierta por reglas anteriores
                                 .authenticated() // Requiere que el usuario esté autenticado
                 )
