@@ -295,8 +295,9 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     public UserEntity getUserByUsername(String username) {
         // Busca en repositorio por username y isActive=true
         // orElseThrow: si el Optional está vacío, lanza la excepción
-        return userRepository.findByUsernameAndIsActive(username, true)
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+        //return userRepository.findByUsernameAndIsActive(username, true)
+                //.orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+        return null;
     }
 
     /**

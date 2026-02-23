@@ -151,8 +151,10 @@ public class RoleServiceImpl implements RoleService {
         else
             existingRole = roleRespository.findByNameAndIdNot(roleDto.getName(), excludeId);
 
+
         if (existingRole.isPresent())
             throw new DuplicateResourceException("Role", "nombre", roleDto.getName());
+
     }
 
     private String normalizeRoleName(String roleName) {

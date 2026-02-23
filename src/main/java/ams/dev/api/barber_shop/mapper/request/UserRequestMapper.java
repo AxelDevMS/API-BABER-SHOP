@@ -14,8 +14,7 @@ public class UserRequestMapper {
 
         UserEntity userEntity = new UserEntity();
 
-        userEntity.setName(userRequestDto.getName());
-        userEntity.setLastName(userRequestDto.getLastName());
+        userEntity.setFullName(userRequestDto.getFullName());
         userEntity.setPhone(userRequestDto.getPhone());
         userEntity.setUsername(userRequestDto.getUsername());
         userEntity.setPassword(userRequestDto.getPassword());
@@ -29,8 +28,7 @@ public class UserRequestMapper {
         if (userRequestDto == null) return null;
 
         UserEntity entity = new UserEntity();
-        entity.setName(userRequestDto.getName());
-        entity.setLastName(userRequestDto.getLastName());
+        entity.setFullName(userRequestDto.getFullName());
         entity.setPhone(userRequestDto.getPhone());
         entity.setUsername(userRequestDto.getUsername());
         entity.setPassword(userRequestDto.getPassword());

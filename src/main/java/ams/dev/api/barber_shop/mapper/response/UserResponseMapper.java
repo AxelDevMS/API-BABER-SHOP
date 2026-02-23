@@ -14,14 +14,12 @@ public class UserResponseMapper {
         return UserResponseDto
                 .builder()
                 .id(userEntity.getId())
-                .name(userEntity.getName())
-                .lastName(userEntity.getLastName())
+                .fullName(userEntity.getFullName())
                 .phone(userEntity.getPhone())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
                 .isActive(userEntity.getIsActive())
                 .isDeleted(userEntity.getIsDeleted())
-                .lastLogin(userEntity.getLastLogin())
                 .build()
                 ;
     }
@@ -32,14 +30,12 @@ public class UserResponseMapper {
         return UserResponseDto
                 .builder()
                 .id(userEntity.getId())
-                .name(userEntity.getName())
-                .lastName(userEntity.getLastName())
+                .fullName(userEntity.getFullName())
                 .phone(userEntity.getPhone())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
                 .isActive(userEntity.getIsActive())
                 .isDeleted(userEntity.getIsDeleted())
-                .lastLogin(userEntity.getLastLogin())
                 .role(roleDto)
                 .build()
                 ;

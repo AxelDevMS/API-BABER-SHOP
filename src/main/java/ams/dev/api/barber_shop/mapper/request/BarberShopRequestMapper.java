@@ -21,9 +21,7 @@ public class BarberShopRequestMapper {
         barberShopEntity.setTaxId(barberShopRequestDto.getTaxId());
         barberShopEntity.setAddress(barberShopRequestDto.getAddress());
         barberShopEntity.setPhone(barberShopRequestDto.getPhone());
-        barberShopEntity.setMobile(barberShopRequestDto.getMobile());
         barberShopEntity.setEmail(barberShopRequestDto.getEmail());
-        barberShopEntity.setLogoUrl(barberShopRequestDto.getLogoUrl());
         barberShopEntity.setOpeningTime(barberShopRequestDto.getOpeningTime());
         barberShopEntity.setClosingTime(barberShopRequestDto.getClosingTime());
         return barberShopEntity;
@@ -41,12 +39,10 @@ public class BarberShopRequestMapper {
         barberShopEntity.setTaxId(barberShopRequestDto.getTaxId());
         barberShopEntity.setAddress(barberShopRequestDto.getAddress());
         barberShopEntity.setPhone(barberShopRequestDto.getPhone());
-        barberShopEntity.setMobile(barberShopRequestDto.getMobile());
         barberShopEntity.setEmail(barberShopRequestDto.getEmail());
-        barberShopEntity.setLogoUrl(barberShopRequestDto.getLogoUrl());
         barberShopEntity.setOpeningTime(barberShopRequestDto.getOpeningTime());
         barberShopEntity.setClosingTime(barberShopRequestDto.getClosingTime());
-        barberShopEntity.setUsers(users);
+        //barberShopEntity.setUsers(users);
         return barberShopEntity;
     }
 }
