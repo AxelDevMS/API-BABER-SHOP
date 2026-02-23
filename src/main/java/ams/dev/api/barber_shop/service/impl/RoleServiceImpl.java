@@ -135,6 +135,11 @@ public class RoleServiceImpl implements RoleService {
         this.roleRespository.save(role);
     }
 
+    @Override
+    public RoleEntity findByName(String name) {
+        return roleRespository.findByName(name).orElseThrow(()->new ResourceNotFoundException("Rol","nombre",name));
+    }
+
     private void validateId(String id){
         if (id == null || id.trim().isEmpty()) {
             Map<String, List<String>> errors = new HashMap<>();

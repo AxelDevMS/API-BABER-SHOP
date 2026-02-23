@@ -19,5 +19,7 @@ public interface RoleService {
 
     RoleEntity findRoleById(String id);
 
+    RoleEntity findByName(String name);
+
     void executeDeleteRole(String id);
 }
