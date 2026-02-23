@@ -91,13 +91,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Deshabilita CSRF (Cross-Site Request Forgery) porque la app es stateless y usa JWT
                 .authorizeHttpRequests(auth -> // Configura la autorización para peticiones HTTP
                         auth
-                                .requestMatchers("/user/**") // Define patrones de URL específicos
-                                .permitAll() // Permite acceso sin autenticación a todas las rutas que comiencen con /user/**
-                                .requestMatchers("/permission/**")
-                                .permitAll()
-                                .requestMatchers("/role/**")
-                                .permitAll()
-                                .requestMatchers("/shop/**")
+                                .requestMatchers("/contract/**","/auth/**") // Define patrones de URL específicos
                                 .permitAll()
                                 .anyRequest() // Cualquier otra petición no cubierta por reglas anteriores
                                 .authenticated() // Requiere que el usuario esté autenticado
