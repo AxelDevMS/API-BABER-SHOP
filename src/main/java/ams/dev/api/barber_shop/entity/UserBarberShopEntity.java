@@ -4,44 +4,44 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.Date;
-import java.util.List;
 
 @Entity
-@Table(name = "permission")
+@Table(name = "user_barbershop")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @SQLRestriction("is_deleted = false")
-public class PermissionEntity {
+public class UserBarberShopEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(unique = true, nullable = false)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "barbershop_id", nullable = false)
+    private BarberShopEntity barbershop;
 
-    private String module;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private RoleEntity role;
 
-    private String action;
-
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    @Column(name = "is_default")
+    private Boolean isDefault = false;  // Si esta es su barbería por defecto
 
     @Column(name = "is_active")
     private Boolean isActive = true;
 
-    @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<RoleEntity> roles;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -50,8 +50,4 @@ public class PermissionEntity {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
-
-
-
-
 }
