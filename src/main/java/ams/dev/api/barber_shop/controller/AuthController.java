@@ -1,23 +1,25 @@
 package ams.dev.api.barber_shop.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.AuthRequestDto;
+import ams.dev.api.barber_shop.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello, World!";
+    @Autowired
+    private AuthService authService;
+
+
+    @PostMapping("/signin")
+    public ResponseEntity<ApiResponseDto> authenticate(@RequestBody AuthRequestDto authRequestDto){
+        ApiResponseDto response  = authService.authenticate(authRequestDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/hey")
-    public String hey() {
-        return "Hey, World!";
-    }
-
-    @GetMapping("/hi")
-    public String hi() {
-        return "Hi";
-    }
 }

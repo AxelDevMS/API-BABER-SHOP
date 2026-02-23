@@ -12,17 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("shop")
+@RequestMapping("/shop")
 public class BarberShopController {
 
     @Autowired
     private BarberShopService barberShopService;
-
-    @PostMapping
-    public ResponseEntity<ApiResponseDto> executeCreateBarberShop(@RequestBody @Valid  BarberShopRequestDto barberShopRequestDto){
-        ApiResponseDto apiResponseDto = this.barberShopService.executeCreateBarberShop(barberShopRequestDto);
-        return ResponseEntity.ok(apiResponseDto);
-    }
 
     @GetMapping
     public ResponseEntity<List<BarberShopResponseDto>> executeListBarberShop(){
