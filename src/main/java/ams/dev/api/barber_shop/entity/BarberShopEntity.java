@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalTime;
@@ -17,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@SQLRestriction("is_deleted = false")
 public class BarberShopEntity {
 
     @Id
@@ -35,12 +37,7 @@ public class BarberShopEntity {
 
     private String phone;
 
-    private String mobile;
-
     private String email;
-
-    @Column(name = "logo_url")
-    private String logoUrl;
 
     @Column(name = "opening_time")
     @JsonFormat(pattern = "HH:mm")
@@ -50,22 +47,21 @@ public class BarberShopEntity {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime closingTime;
 
-    private String timezone;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @Enumerated(EnumType.STRING)
     private BarberShopStatus status;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_barbershop",
-            joinColumns = @JoinColumn(name = "barbershop_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<UserEntity> users;
+    // Relación con usuarios a través de user_barbershops
+    @OneToMany(mappedBy = "barbershop", fetch = FetchType.LAZY)
+    private List<UserBarberShopEntity> userAssignments;
 
     @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Date updatedAt;
 }

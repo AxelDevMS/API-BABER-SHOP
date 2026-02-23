@@ -1,6 +1,5 @@
 package ams.dev.api.barber_shop.service.impl;
 
-import ams.dev.api.barber_shop.dto.MailDataDto;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.service.EmailService;
 import jakarta.mail.internet.MimeMessage;

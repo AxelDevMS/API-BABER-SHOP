@@ -6,78 +6,59 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 import java.util.List;
 
-/**
- * Entidad JPA que representa un Usuario en la base de datos.
- *
- * Esta clase mapea la tabla "users" en la base de datos relacional.
- * Utiliza generación de IDs de tipo UUID (Universal Unique Identifier) para garantizar
- * unicidad a nivel global sin depender de auto-incrementos secuenciales.
- *
- * Anotaciones Lombok utilizadas:
- * - @Data: Genera getters, setters, equals(), hashCode(), toString()
- * - @AllArgsConstructor: Genera constructor con todos los parámetros
- * - @NoArgsConstructor: Genera constructor sin parámetros (requerido por JPA)
- *
- * Tabla en BD:
- * - Nombre: "users"
- * - Columnas:
- *   * id (UUID, clave primaria)
- *   * username (String, identificador único del usuario)
- *   * password (String, contraseña encriptada con BCrypt)
- *   * is_active (Boolean, indica si el usuario está activo)
- */
 @Entity
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@SQLRestriction("is_deleted = false")
 public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "username")
+    @Column(name = "username",unique = true, nullable = false)
     private String username;
 
+    @Column(unique = true,nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
-    private String name;
-
-    @Column(name = "lastname")
-    private String lastName;
+    @Column(name = "full_name")
+    private String fullName;
 
     private String phone;
 
     @Column(name = "is_active")
-    private Boolean isActive;
+    private Boolean isActive = true;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
-    @Column(name = "last_login")
-    private Date lastLogin;
-
-    //@Column(name = "role")
-    //@Enumerated(EnumType.STRING)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private RoleEntity role;
 
-    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    private List<BarberShopEntity> barberShops;
+    // Relación con barberías a través de user_barbershops
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserBarberShopEntity> barberShopAssignments;
+
 
     @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Date createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private Date updatedAt;
 
 

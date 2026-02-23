@@ -5,6 +5,7 @@ import ams.dev.api.barber_shop.dto.BarberShopRequestDto;
 import ams.dev.api.barber_shop.dto.BarberShopResponseDto;
 import ams.dev.api.barber_shop.dto.UserResponseDto;
 import ams.dev.api.barber_shop.entity.BarberShopEntity;
+import ams.dev.api.barber_shop.entity.UserBarberShopEntity;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import ams.dev.api.barber_shop.enums.BarberShopStatus;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
@@ -12,6 +13,7 @@ import ams.dev.api.barber_shop.exceptions.ResourceNotFoundException;
 import ams.dev.api.barber_shop.mapper.request.BarberShopRequestMapper;
 import ams.dev.api.barber_shop.mapper.response.BarberShopResponseMapper;
 import ams.dev.api.barber_shop.repository.BarberShopRepository;
+import ams.dev.api.barber_shop.repository.UserBarberShopRepository;
 import ams.dev.api.barber_shop.service.BarberShopService;
 import ams.dev.api.barber_shop.service.EmailService;
 import ams.dev.api.barber_shop.service.UserService;
@@ -39,6 +41,9 @@ public class BarberShopServiceImpl implements BarberShopService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private UserBarberShopRepository userBarberShopRepository;
+
 
     @Transactional
     @Override
@@ -47,15 +52,24 @@ public class BarberShopServiceImpl implements BarberShopService {
         if (userEntity == null)
             throw new BusinessException("No se pudo crear el usuario para la barbería");
 
-        BarberShopEntity barberShopEntity =  this.barberShopRequestMapper.toConvertEntity(barberShopRequestDto,userEntity);
+        BarberShopEntity barberShopEntity =  this.barberShopRequestMapper.toConvertEntity(barberShopRequestDto);
         barberShopEntity.setStatus(BarberShopStatus.ACTIVE);
-
         barberShopEntity = this.barberShopRepository.save(barberShopEntity);
+
+        UserBarberShopEntity assignment = new UserBarberShopEntity();
+        assignment.setUser(userEntity);
+        assignment.setBarbershop(barberShopEntity);
+        assignment.setRole(userEntity.getRole());  // El rol ADMIN
+        assignment.setIsDefault(true);  // Esta es su barbería por defecto
+        assignment.setIsActive(true);
+        assignment.setIsDeleted(false);
+
+        this.userBarberShopRepository.save(assignment);
 
         emailService.sendEmailCredentialsAcces(
                 userEntity.getEmail(),
-                userEntity.getName()+" "+userEntity.getLastName(),
-                userEntity.getEmail(),
+                userEntity.getFullName(),
+                userEntity.getUsername(),
                 barberShopRequestDto.getUser().getPassword()
         );
         return new ApiResponseDto("Barbería registrada con éxito con id: " + barberShopEntity.getId());
@@ -94,12 +108,9 @@ public class BarberShopServiceImpl implements BarberShopService {
         barberBD.setTaxId(barberShopRequestDto.getTaxId());
         barberBD.setAddress(barberShopRequestDto.getAddress());
         barberBD.setPhone(barberShopRequestDto.getPhone());
-        barberBD.setMobile(barberShopRequestDto.getMobile());
         barberBD.setEmail(barberShopRequestDto.getEmail());
-        barberBD.setLogoUrl(barberShopRequestDto.getLogoUrl());
         barberBD.setOpeningTime(barberShopRequestDto.getOpeningTime());
         barberBD.setClosingTime(barberShopRequestDto.getClosingTime());
-        barberBD.setTimezone(barberShopRequestDto.getTimezone());
 
         barberBD = barberShopRepository.save(barberBD);
         return new ApiResponseDto("Los Datos de la barbería se actualizado con éxito con id: " + barberBD.getId());
@@ -109,7 +120,7 @@ public class BarberShopServiceImpl implements BarberShopService {
     public void executeDeletedBarberShop(String barberShopId) {
         BarberShopEntity barberBD = this.findById(barberShopId);
 
-        barberBD.setStatus(BarberShopStatus.DELETED);
+        //barberBD.setStatus(BarberShopStatus.DELETED);
         barberShopRepository.save(barberBD);
     }
 
