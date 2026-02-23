@@ -222,55 +222,6 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     }
 
     /**
-     * CREA UN NUEVO EMPLEADO/USUARIO EN EL SISTEMA
-     * ============================================
-     *
-     * Este método maneja el registro de nuevos usuarios, asegurando que las
-     * contraseñas se almacenen de forma segura.
-     *
-     * FLUJO DETALLADO:
-     * ----------------
-     * 1. Recibe EmployeeRequestDto con datos del nuevo usuario
-     * 2. MapperEntity convierte DTO → UserEntity (mapea campos básicos)
-     * 3. Encripta la contraseña usando BCrypt ANTES de guardar
-     * 4. UserRepository.save() persiste la entidad:
-     *    - Genera automáticamente UUID como ID
-     *    - Establece timestamps de creación/actualización
-     * 5. Retorna ApiResponseDto con el ID generado
-     *
-     * CONSIDERACIONES DE SEGURIDAD:
-     * ----------------------------
-     * - La contraseña NUNCA se guarda en texto plano
-     * - BCrypt genera un salt aleatorio automáticamente
-     * - El factor de costo (strength) es configurable desde PasswordEncoder
-     * - El ID es UUID no secuencial (evita enumeración de usuarios)
-     *
-     * @param empolyeeRequestDto DTO con datos:
-     *                           - username: String único
-     *                           - password: String sin encriptar
-     *                           - isActive: Boolean (true/false)
-     * @return ApiResponseDto con mensaje: "Empleado Registrado Correctamente con id: {uuid}"
-     */
-    @Override
-    public ApiResponseDto executeCreateEmployee(UserRequestDto empolyeeRequestDto) {
-        // PASO 1: Mapear DTO a entidad
-        // Convierte EmployeeRequestDto → UserEntity (copia username y isActive)
-        UserEntity userEntity = userRequestMapper.toEntity(empolyeeRequestDto);
-
-        // PASO 2: Encriptar contraseña
-        // Toma la contraseña en texto plano del DTO, la encripta y la asigna a la entidad
-        userEntity.setPassword(passwordEncoder.encode(empolyeeRequestDto.getPassword()));
-
-        // PASO 3: Persistir en base de datos
-        // save() inserta el registro y retorna la entidad con el ID generado
-        userEntity = userRepository.save(userEntity);
-
-        // PASO 4: Retornar respuesta con el ID generado
-        // El ID es un UUID autogenerado por JPA/Hibernate
-        return new ApiResponseDto("Empleado Registrado Correctamente con id: " + userEntity.getId());
-    }
-
-    /**
      * BUSCA UN USUARIO ACTIVO POR NOMBRE DE USUARIO
      * =============================================
      *
@@ -295,9 +246,8 @@ public class AuthServiceImpl implements AuthService, UserDetailsService {
     public UserEntity getUserByUsername(String username) {
         // Busca en repositorio por username y isActive=true
         // orElseThrow: si el Optional está vacío, lanza la excepción
-        //return userRepository.findByUsernameAndIsActive(username, true)
-                //.orElseThrow(() -> new UsernameNotFoundException("Username not found"));
-        return null;
+        return userRepository.findByUsernameAndIsActive(username, true)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
     }
 
     /**
