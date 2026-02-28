@@ -4,6 +4,7 @@ import ams.dev.api.barber_shop.entity.ClientEntity;
 import ams.dev.api.barber_shop.enums.Constants;
 import ams.dev.api.barber_shop.enums.ConstantsSQL;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ClientRepository extends JpaRepository<ClientEntity,String> {
+public interface ClientRepository extends JpaRepository<ClientEntity,String>, JpaSpecificationExecutor<ClientEntity> {
 
    // 1. Buscar por email y barbershop_id
     @Query(name = ConstantsSQL.SELECT_CLIENT_EMAIL_AND_BARBERSHOP_ID, nativeQuery = true)
@@ -34,6 +35,4 @@ public interface ClientRepository extends JpaRepository<ClientEntity,String> {
     // 4. Buscar todos los clientes por barbershop_id
     @Query(name = ConstantsSQL.SELECT_CLIENTS_BY_BARBERSHOP_ID, nativeQuery = true)
     List<ClientEntity> findAllByBarbershopId(@Param(Constants.PARAM_BARBERSHOP_ID) String barbershopId);
-
-
 }

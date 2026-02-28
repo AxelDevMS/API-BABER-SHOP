@@ -1,11 +1,11 @@
 package ams.dev.api.barber_shop.service;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
 import ams.dev.api.barber_shop.dto.client.ClientRequestDto;
 import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
+import ams.dev.api.barber_shop.dto.pagination.PageResponseDto;
 import ams.dev.api.barber_shop.entity.ClientEntity;
-import org.springframework.data.repository.query.Param;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -17,7 +17,10 @@ public interface ClientService {
 
     ClientEntity findById(String clientId, String barbershopId);
 
-    List<ClientResponseDto> executeGetListClient(String barbershopId);
+    //List<ClientResponseDto> executeGetListClient(ClientFilterDto clientFilterDto);
+
+    PageResponseDto<ClientResponseDto> executeGetListClient(ClientFilterDto filterDto);
+
 
     ClientResponseDto executeGetClient(String clientId, String barbershopId);
 

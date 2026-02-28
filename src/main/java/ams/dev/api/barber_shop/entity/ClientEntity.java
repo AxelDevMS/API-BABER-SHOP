@@ -17,7 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 @Builder
-@SQLRestriction("is_deleted = false")
+//@SQLRestriction("is_deleted = false")
 public class ClientEntity {
 
     @Id
