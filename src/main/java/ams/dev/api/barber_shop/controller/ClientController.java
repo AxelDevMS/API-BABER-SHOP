@@ -7,16 +7,19 @@ import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
 import ams.dev.api.barber_shop.dto.pagination.PageParamRequestDto;
 import ams.dev.api.barber_shop.dto.pagination.PageResponseDto;
 import ams.dev.api.barber_shop.service.ClientService;
+import ams.dev.api.barber_shop.util.GenerateExcelUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/client")
@@ -24,6 +27,9 @@ public class ClientController {
 
     @Autowired
     private ClientService clientService;
+
+    @Autowired
+    private GenerateExcelUtil generateExcelUtil;
 
 
     @PostMapping
@@ -95,4 +101,27 @@ public class ClientController {
         this.clientService.executeDeleteClient(clientId, barbershopId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/report")
+    public ResponseEntity<byte[]> executeGenerateReportClient(@RequestParam(required = false) String barbershopId) {
+        try {
+            byte[] excelContent = clientService.executeGenerateReportClient(barbershopId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData(
+                    "attachment",
+                    generateExcelUtil.generateFileName("reporte_clientes")
+            );
+
+            return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
 }

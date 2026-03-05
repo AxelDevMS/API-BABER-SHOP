@@ -17,6 +17,10 @@ import ams.dev.api.barber_shop.repository.ClientRepository;
 import ams.dev.api.barber_shop.repository.specification.ClientSpecification;
 import ams.dev.api.barber_shop.service.BarberShopService;
 import ams.dev.api.barber_shop.service.ClientService;
+import ams.dev.api.barber_shop.util.ExcelReportConfig;
+import ams.dev.api.barber_shop.util.ExcelRowStyle;
+import ams.dev.api.barber_shop.util.GenerateExcelUtil;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +31,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
 
 @Service
 public class ClientServiceImpl implements ClientService {
@@ -46,6 +49,9 @@ public class ClientServiceImpl implements ClientService {
 
     @Autowired
     private BarberShopService barberShopService;
+
+    @Autowired
+    private GenerateExcelUtil generateExcel;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientServiceImpl.class);
 
@@ -150,6 +156,28 @@ public class ClientServiceImpl implements ClientService {
         LOGGER.info("CLIENTE ELIMINADO Y TIENE STATUS {}", clientBD.getIsDeleted());
     }
 
+    @Override
+    public byte[] executeGenerateReportClient(String barbershopId) throws IOException {
+        List<ClientEntity> clientList = this.clientRepository.findAllByBarbershopId(barbershopId);
+
+        List<Function<ClientEntity, Object>> extractorList = Arrays.asList(
+                client -> client.getId().substring(24),
+                ClientEntity::getFullName,
+                ClientEntity::getPhone,
+                ClientEntity::getEmail,
+                client -> client.getIsVip() ? "Sí" : "No",
+                client -> client.getIsActive() ? "Activo" : "Inactivo"
+        );
+
+        ExcelReportConfig<ClientEntity> config = ExcelReportConfig.<ClientEntity>builder()
+                .sheetName("Clientes")
+                .headers(new String[]{"ID","Nombre","Teléfono","Email","VIP","Estado"})
+                .fieldExtractors(extractorList)
+                .title("Reporte de Clientes")
+                .build();
+
+        return generateExcel.generateExcel(clientList, config);
+    }
     /*
     ==============================================================================
                         MÉTODOS PRIVADOS USADOS PARA ESTA CLASE

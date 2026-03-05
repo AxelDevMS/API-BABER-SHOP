@@ -7,6 +7,7 @@ import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
 import ams.dev.api.barber_shop.dto.pagination.PageResponseDto;
 import ams.dev.api.barber_shop.entity.ClientEntity;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ClientService {
@@ -26,5 +27,5 @@ public interface ClientService {
 
     void executeDeleteClient(String clientId, String barbershopId);
 
-
+    byte[] executeGenerateReportClient(String barbershopId) throws IOException;
 }
