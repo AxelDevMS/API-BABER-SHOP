@@ -82,10 +82,14 @@ public class ClientServiceImpl implements ClientService {
 
         ClientEntity clientBD = this.findById(clientId,barbershopId);
 
+        if (!clientRequestDto.getPhone().equals(clientBD.getPhone()))
+            throw new BusinessException("El numero telefónico ya se encuentra registrado con otro cliente");
+
         clientBD.setFullName(clientRequestDto.getFullName());
         clientBD.setPhone(clientRequestDto.getPhone());
         clientBD.setEmail(clientRequestDto.getEmail());
         clientBD.setNotes(clientRequestDto.getNotes());
+        clientRepository.save(clientBD);
 
         LOGGER.info("CLIENTE ACTUALIZADO CON HORA {}", clientBD.getUpdatedAt());
 
