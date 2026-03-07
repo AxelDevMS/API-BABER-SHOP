@@ -1,6 +1,5 @@
-package ams.dev.api.barber_shop.dto.client;
+package ams.dev.api.barber_shop.dto.pagination;
 
-import ams.dev.api.barber_shop.dto.pagination.PageParamRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ClientFilterDto implements Serializable {
+public class DataFilterDto implements Serializable {
 
     private String barbershopId;
     private Boolean active;

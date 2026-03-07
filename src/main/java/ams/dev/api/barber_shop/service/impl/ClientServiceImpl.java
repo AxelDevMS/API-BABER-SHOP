@@ -1,7 +1,7 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
-import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
+import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.dto.client.ClientRequestDto;
 import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
 import ams.dev.api.barber_shop.dto.pagination.PageResponseDto;
@@ -18,9 +18,7 @@ import ams.dev.api.barber_shop.repository.specification.ClientSpecification;
 import ams.dev.api.barber_shop.service.BarberShopService;
 import ams.dev.api.barber_shop.service.ClientService;
 import ams.dev.api.barber_shop.util.ExcelReportConfig;
-import ams.dev.api.barber_shop.util.ExcelRowStyle;
 import ams.dev.api.barber_shop.util.GenerateExcelUtil;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +104,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public PageResponseDto<ClientResponseDto> executeGetListClient(ClientFilterDto filterDto) {
+    public PageResponseDto<ClientResponseDto> executeGetListClient(DataFilterDto filterDto) {
         LOGGER.info("=== METODO PARA FILTRAR CLIENTES ===");
         LOGGER.info("BARBERSHOP ID: {}", filterDto.getBarbershopId());
 

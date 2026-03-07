@@ -1,7 +1,7 @@
 package ams.dev.api.barber_shop.controller;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
-import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
+import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.dto.client.ClientRequestDto;
 import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
 import ams.dev.api.barber_shop.dto.pagination.PageParamRequestDto;
@@ -165,7 +165,7 @@ public class ClientController {
             @RequestParam(defaultValue = "desc") String sortDirection
     ){
         PageParamRequestDto pageParam = new PageParamRequestDto(page, size, sortBy, sortDirection);
-        ClientFilterDto clientFilterDto = ClientFilterDto.builder()
+        DataFilterDto dataFilterDto = DataFilterDto.builder()
                 .barbershopId(barbershopId)
                 .active(active)
                 .deleted(deleted)
@@ -176,7 +176,7 @@ public class ClientController {
                 .pageParam(pageParam)
                 .build();
 
-        return ResponseEntity.ok(this.clientService.executeGetListClient(clientFilterDto));
+        return ResponseEntity.ok(this.clientService.executeGetListClient(dataFilterDto));
     }
 
     @GetMapping("/{clientId}/{barbershopId}")

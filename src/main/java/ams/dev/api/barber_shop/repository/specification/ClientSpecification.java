@@ -1,6 +1,6 @@
 package ams.dev.api.barber_shop.repository.specification;
 
-import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
+import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.entity.ClientEntity;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -86,7 +86,7 @@ public class ClientSpecification {
     /**
      * Método que combina todas las specifications de manera elegante
      */
-    public static Specification<ClientEntity> combineFromFilter(ClientFilterDto filter) {
+    public static Specification<ClientEntity> combineFromFilter(DataFilterDto filter) {
         return Specification
                 .where(withBarbershopId(filter != null ? filter.getBarbershopId() : null))
                 .and(withActive(filter != null ? filter.getActive() : null))
