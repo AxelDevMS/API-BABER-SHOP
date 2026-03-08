@@ -1,6 +1,7 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
 import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.dto.client.ClientRequestDto;
 import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
@@ -104,21 +105,21 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public PageResponseDto<ClientResponseDto> executeGetListClient(DataFilterDto filterDto) {
+    public PageResponseDto<ClientResponseDto> executeGetListClient(ClientFilterDto paramsDto) {
         LOGGER.info("=== METODO PARA FILTRAR CLIENTES ===");
-        LOGGER.info("BARBERSHOP ID: {}", filterDto.getBarbershopId());
+        LOGGER.info("BARBERSHOP ID: {}", paramsDto.getBarbershopId());
 
-        Sort sort = filterDto.getPageParam().getSortDirection().equalsIgnoreCase(Constants.PARAM_DESC) ?
-                Sort.by(filterDto.getPageParam().getSortBy()).descending() :
-                Sort.by(filterDto.getPageParam().getSortBy()).ascending();
+        Sort sort = paramsDto.getPageParam().getSortDirection().equalsIgnoreCase(Constants.PARAM_DESC) ?
+                Sort.by(paramsDto.getPageParam().getSortBy()).descending() :
+                Sort.by(paramsDto.getPageParam().getSortBy()).ascending();
 
-        Pageable pageable = PageRequest.of(filterDto.getPageParam().getPage(),
-                filterDto.getPageParam().getSize(), sort);
+        Pageable pageable = PageRequest.of(paramsDto.getPageParam().getPage(),
+                paramsDto.getPageParam().getSize(), sort);
 
-        Specification<ClientEntity> spec = ClientSpecification.combineFromFilter(filterDto);
+        Specification<ClientEntity> spec = ClientSpecification.combineFromFilter(paramsDto);
 
-        if (filterDto.getBarbershopId() != null)
-            this.validateId(filterDto.getBarbershopId());
+        if (paramsDto.getBarbershopId() != null)
+            this.validateId(paramsDto.getBarbershopId());
 
 
         Page<ClientEntity> clientListBD = this.clientRepository.findAll(spec, pageable);

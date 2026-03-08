@@ -1,6 +1,7 @@
 package ams.dev.api.barber_shop.service;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
 import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.dto.client.ClientRequestDto;
 import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
@@ -19,7 +20,7 @@ public interface ClientService {
 
     //List<ClientResponseDto> executeGetListClient(ClientFilterDto clientFilterDto);
 
-    PageResponseDto<ClientResponseDto> executeGetListClient(DataFilterDto filterDto);
+    PageResponseDto<ClientResponseDto> executeGetListClient(ClientFilterDto paramsDto);
 
 
     ClientResponseDto executeGetClient(String clientId, String barbershopId);

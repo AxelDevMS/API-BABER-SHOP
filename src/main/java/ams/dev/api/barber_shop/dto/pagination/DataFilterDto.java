@@ -13,11 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class DataFilterDto implements Serializable {
-
     private String barbershopId;
-    private Boolean active;
-    private Boolean deleted;
-    private Boolean vip;
     private LocalDateTime createdAfter;
     private LocalDateTime createdBefore;
     private String searchTerm;

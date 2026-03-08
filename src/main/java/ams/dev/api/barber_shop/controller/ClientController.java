@@ -1,6 +1,7 @@
 package ams.dev.api.barber_shop.controller;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
+import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
 import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.dto.client.ClientRequestDto;
 import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
@@ -29,7 +30,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/client")
+@RequestMapping("/api/client")
 @Tag(name = "Clientes", description = "API para la gestión de clientes de la barbería")
 public class ClientController {
 
@@ -165,18 +166,18 @@ public class ClientController {
             @RequestParam(defaultValue = "desc") String sortDirection
     ){
         PageParamRequestDto pageParam = new PageParamRequestDto(page, size, sortBy, sortDirection);
-        DataFilterDto dataFilterDto = DataFilterDto.builder()
-                .barbershopId(barbershopId)
-                .active(active)
-                .deleted(deleted)
-                .vip(vip)
-                .createdAfter(createdAfter)
-                .createdBefore(createdBefore)
-                .searchTerm(search)
-                .pageParam(pageParam)
-                .build();
 
-        return ResponseEntity.ok(this.clientService.executeGetListClient(dataFilterDto));
+        ClientFilterDto paramsDto = new ClientFilterDto();
+        paramsDto.setBarbershopId(barbershopId);
+        paramsDto.setActive(active);
+        paramsDto.setDeleted(deleted);
+        paramsDto.setVip(vip);
+        paramsDto.setCreatedAfter(createdAfter);
+        paramsDto.setCreatedBefore(createdBefore);
+        paramsDto.setSearchTerm(search);
+        paramsDto.setPageParam(pageParam);
+
+        return ResponseEntity.ok(this.clientService.executeGetListClient(paramsDto));
     }
 
     @GetMapping("/{clientId}/{barbershopId}")

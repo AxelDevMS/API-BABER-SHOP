@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.repository.specification;
 
+import ams.dev.api.barber_shop.dto.client.ClientFilterDto;
 import ams.dev.api.barber_shop.dto.pagination.DataFilterDto;
 import ams.dev.api.barber_shop.entity.ClientEntity;
 import org.springframework.data.jpa.domain.Specification;
@@ -86,15 +87,15 @@ public class ClientSpecification {
     /**
      * Método que combina todas las specifications de manera elegante
      */
-    public static Specification<ClientEntity> combineFromFilter(DataFilterDto filter) {
+    public static Specification<ClientEntity> combineFromFilter(ClientFilterDto paramsDto) {
         return Specification
-                .where(withBarbershopId(filter != null ? filter.getBarbershopId() : null))
-                .and(withActive(filter != null ? filter.getActive() : null))
-                .and(withDeleted(filter != null ? filter.getDeleted() : null))
-                .and(withVip(filter != null ? filter.getVip() : null))
-                .and(withCreatedAfter(filter != null ? filter.getCreatedAfter() : null))
-                .and(withCreatedBefore(filter != null ? filter.getCreatedBefore() : null))
-                .and(withSearchTerm(filter != null ? filter.getSearchTerm() : null));
+                .where(withBarbershopId(paramsDto != null ? paramsDto.getBarbershopId() : null))
+                .and(withActive(paramsDto != null ? paramsDto.getActive() : null))
+                .and(withDeleted(paramsDto != null ? paramsDto.getDeleted() : null))
+                .and(withVip(paramsDto != null ? paramsDto.getVip() : null))
+                .and(withCreatedAfter(paramsDto != null ? paramsDto.getCreatedAfter() : null))
+                .and(withCreatedBefore(paramsDto != null ? paramsDto.getCreatedBefore() : null))
+                .and(withSearchTerm(paramsDto != null ? paramsDto.getSearchTerm() : null));
     }
 
 }
