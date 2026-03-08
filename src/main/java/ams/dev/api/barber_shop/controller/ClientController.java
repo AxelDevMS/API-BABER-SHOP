@@ -41,24 +41,11 @@ public class ClientController {
     private GenerateExcelUtil generateExcelUtil;
 
     @PostMapping
-    @Operation(
-            summary = "Crear un nuevo cliente",
-            description = "Registra un nuevo cliente en el sistema con los datos proporcionados"
-    )
+    @Operation(summary = "Crear un nuevo cliente", description = "Registra un nuevo cliente en el sistema con los datos proporcionados")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Cliente creado exitosamente",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos del cliente inválidos o incompletos"
-            ),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Conflicto - El cliente ya existe"
-            )
+            @ApiResponse(responseCode = "201", description = "Cliente creado exitosamente", content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Datos del cliente inválidos o incompletos"),
+            @ApiResponse(responseCode = "409", description = "Conflicto - El cliente ya existe")
     })
     public ResponseEntity<ApiResponseDto> executeCreateClient(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -80,24 +67,11 @@ public class ClientController {
     }
 
     @PutMapping("/{barbershopId}")
-    @Operation(
-            summary = "Actualizar un cliente existente",
-            description = "Actualiza la información de un cliente específico por ID de barbería"
-    )
+    @Operation(summary = "Actualizar un cliente existente", description = "Actualiza la información de un cliente específico por ID de barbería")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Cliente actualizado exitosamente",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos de actualización inválidos"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Cliente no encontrado"
-            )
+            @ApiResponse(responseCode = "200", description = "Cliente actualizado exitosamente", content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de actualización inválidos"),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
     })
     public ResponseEntity<ApiResponseDto> executeUpdateClient(
             @Parameter(description = "ID de la barbería", required = true, example = "barber123")
@@ -114,20 +88,10 @@ public class ClientController {
     }
 
     @GetMapping
-    @Operation(
-            summary = "Listar clientes con filtros",
-            description = "Obtiene una lista paginada de clientes aplicando múltiples filtros opcionales"
-    )
+    @Operation(summary = "Listar clientes con filtros", description = "Obtiene una lista paginada de clientes aplicando múltiples filtros opcionales")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de clientes obtenida exitosamente",
-                    content = @Content(schema = @Schema(implementation = PageResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Parámetros de filtro inválidos"
-            )
+            @ApiResponse(responseCode = "200", description = "Lista de clientes obtenida exitosamente", content = @Content(schema = @Schema(implementation = PageResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Parámetros de filtro inválidos")
     })
     public ResponseEntity<PageResponseDto<ClientResponseDto>> executeListClient(
             @Parameter(description = "ID de la barbería (obligatorio)", required = true, example = "barber123")
@@ -181,20 +145,10 @@ public class ClientController {
     }
 
     @GetMapping("/{clientId}/{barbershopId}")
-    @Operation(
-            summary = "Obtener un cliente específico",
-            description = "Obtiene los detalles de un cliente por su ID y el ID de la barbería"
-    )
+    @Operation(summary = "Obtener un cliente específico", description = "Obtiene los detalles de un cliente por su ID y el ID de la barbería")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Cliente encontrado exitosamente",
-                    content = @Content(schema = @Schema(implementation = ClientResponseDto.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Cliente no encontrado"
-            )
+            @ApiResponse(responseCode = "200", description = "Cliente encontrado exitosamente", content = @Content(schema = @Schema(implementation = ClientResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
     })
     public ResponseEntity<ClientResponseDto> executeGetClient(
             @Parameter(description = "ID del cliente", required = true, example = "client456")
@@ -207,19 +161,10 @@ public class ClientController {
     }
 
     @DeleteMapping("/{clientId}/{barbershopId}")
-    @Operation(
-            summary = "Eliminar un cliente",
-            description = "Elimina (soft delete) un cliente por su ID y el ID de la barbería"
-    )
+    @Operation(summary = "Eliminar un cliente", description = "Elimina (soft delete) un cliente por su ID y el ID de la barbería")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "Cliente eliminado exitosamente (sin contenido)"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Cliente no encontrado"
-            )
+            @ApiResponse(responseCode = "204", description = "Cliente eliminado exitosamente (sin contenido)"),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
     })
     public ResponseEntity<Void> executeDeleteClient(
             @Parameter(description = "ID del cliente", required = true, example = "client456")
@@ -233,20 +178,10 @@ public class ClientController {
     }
 
     @GetMapping("/report")
-    @Operation(
-            summary = "Generar reporte de clientes en Excel",
-            description = "Genera y descarga un reporte en formato Excel con la lista de clientes"
-    )
+    @Operation(summary = "Generar reporte de clientes en Excel", description = "Genera y descarga un reporte en formato Excel con la lista de clientes")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Reporte generado exitosamente",
-                    content = @Content(mediaType = "application/vnd.ms-excel")
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno al generar el reporte"
-            )
+            @ApiResponse(responseCode = "200", description = "Reporte generado exitosamente", content = @Content(mediaType = "application/vnd.ms-excel")),
+            @ApiResponse(responseCode = "500", description = "Error interno al generar el reporte")
     })
     public ResponseEntity<byte[]> executeGenerateReportClient(
             @Parameter(description = "ID de la barbería (opcional)", example = "barber123")
