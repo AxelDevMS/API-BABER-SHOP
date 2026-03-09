@@ -1,6 +1,6 @@
 package ams.dev.api.barber_shop.mapper.request;
 
-import ams.dev.api.barber_shop.dto.RoleRequestDto;
+import ams.dev.api.barber_shop.dto.role.RoleRequestDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import ams.dev.api.barber_shop.entity.RoleEntity;
 import org.springframework.stereotype.Component;

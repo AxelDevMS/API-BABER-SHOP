@@ -1,6 +1,6 @@
 package ams.dev.api.barber_shop.mapper.response;
 
-import ams.dev.api.barber_shop.dto.RoleResponseDto;
+import ams.dev.api.barber_shop.dto.role.RoleResponseDto;
 import ams.dev.api.barber_shop.dto.UserResponseDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package ams.dev.api.barber_shop.dto;
+package ams.dev.api.barber_shop.dto.role;
 
 import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -15,6 +15,7 @@ public class RoleResponseDto implements Serializable {
     private String id;
     private String name;
     private String description;
+    private Boolean isActive;
     private Boolean isDeleted;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "America/Mexico_City")
     private Date createdAt;

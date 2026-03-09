@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.dto;
 
+import ams.dev.api.barber_shop.dto.role.RoleRequestDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
