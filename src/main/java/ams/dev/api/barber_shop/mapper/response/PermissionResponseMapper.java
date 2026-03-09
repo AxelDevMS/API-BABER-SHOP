@@ -15,6 +15,7 @@ public class PermissionResponseMapper {
         permissionResponseDto.setAction(permissionEntity.getAction());
         permissionResponseDto.setDescription(permissionEntity.getDescription());
         permissionResponseDto.setIsActive(permissionEntity.getIsActive());
+        permissionResponseDto.setIsDeleted(permissionEntity.getIsDeleted());
         permissionResponseDto.setCreatedAt(permissionEntity.getCreatedAt());
         permissionResponseDto.setUpdatedAt(permissionEntity.getUpdatedAt());
         return permissionResponseDto;
