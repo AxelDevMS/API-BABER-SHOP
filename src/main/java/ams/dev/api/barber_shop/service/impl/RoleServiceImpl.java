@@ -1,6 +1,8 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.*;
+import ams.dev.api.barber_shop.dto.permission.PermissionRequestDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.exceptions.BusinessException;

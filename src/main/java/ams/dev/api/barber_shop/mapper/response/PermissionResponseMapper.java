@@ -1,6 +1,6 @@
 package ams.dev.api.barber_shop.mapper.response;
 
-import ams.dev.api.barber_shop.dto.PermissionResponseDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import org.springframework.stereotype.Component;
 

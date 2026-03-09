@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.dto;
 
+import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
