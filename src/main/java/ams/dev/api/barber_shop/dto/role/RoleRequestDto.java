@@ -1,5 +1,6 @@
-package ams.dev.api.barber_shop.dto;
+package ams.dev.api.barber_shop.dto.role;
 
+import ams.dev.api.barber_shop.dto.permission.PermissionRequestDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 

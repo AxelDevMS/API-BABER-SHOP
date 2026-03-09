@@ -124,7 +124,8 @@ public class BarberShopServiceImpl implements BarberShopService {
         barberShopRepository.save(barberBD);
     }
 
-    private BarberShopEntity findById(String barberShopId){
+    @Override
+    public BarberShopEntity findById(String barberShopId){
         return barberShopRepository.findById(barberShopId).orElseThrow(()->new ResourceNotFoundException("BarberShop","ID",barberShopId));
     }
 }

@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.dto;
 
+import ams.dev.api.barber_shop.dto.role.RoleResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

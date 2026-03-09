@@ -57,6 +57,9 @@ public class BarberShopEntity {
     @OneToMany(mappedBy = "barbershop", fetch = FetchType.LAZY)
     private List<UserBarberShopEntity> userAssignments;
 
+    @OneToMany(mappedBy = "barbershop", fetch = FetchType.LAZY)
+    private List<ClientEntity> clients;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Date createdAt;

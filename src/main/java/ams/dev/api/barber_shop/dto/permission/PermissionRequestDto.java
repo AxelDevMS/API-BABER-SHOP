@@ -1,4 +1,4 @@
-package ams.dev.api.barber_shop.dto;
+package ams.dev.api.barber_shop.dto.permission;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;

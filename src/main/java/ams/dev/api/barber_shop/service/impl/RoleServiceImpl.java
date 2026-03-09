@@ -1,19 +1,33 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.*;
+import ams.dev.api.barber_shop.dto.pagination.PageResponseDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionRequestDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
+import ams.dev.api.barber_shop.dto.role.RoleFilerDto;
+import ams.dev.api.barber_shop.dto.role.RoleRequestDto;
+import ams.dev.api.barber_shop.dto.role.RoleResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import ams.dev.api.barber_shop.entity.RoleEntity;
+import ams.dev.api.barber_shop.enums.Constants;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.exceptions.ResourceNotFoundException;
 import ams.dev.api.barber_shop.mapper.request.RoleRequestMapper;
 import ams.dev.api.barber_shop.mapper.response.RoleResponseMapper;
-import ams.dev.api.barber_shop.repository.RoleRespository;
+import ams.dev.api.barber_shop.repository.RoleRepository;
+import ams.dev.api.barber_shop.repository.specification.PermissionSpecification;
+import ams.dev.api.barber_shop.repository.specification.RoleSpecification;
 import ams.dev.api.barber_shop.service.PermissionService;
 import ams.dev.api.barber_shop.service.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,7 +36,7 @@ import java.util.*;
 public class RoleServiceImpl implements RoleService {
 
     @Autowired
-    private RoleRespository roleRespository;
+    private RoleRepository roleRepository;
 
     @Autowired
     private PermissionService permissionService;
@@ -53,14 +67,14 @@ public class RoleServiceImpl implements RoleService {
         roleEntity.setIsDeleted(false);
         roleEntity.setPermissions(permissions);
 
-        roleEntity = this.roleRespository.save(roleEntity);
+        roleEntity = this.roleRepository.save(roleEntity);
 
         return new ApiResponseDto("Rol registrado con éxito con id: " + roleEntity.getId());
     }
 
     @Override
     public List<RoleResponseDto> executeGetRoles() {
-        List<RoleEntity> roleEntities = this.roleRespository.findAll();
+        List<RoleEntity> roleEntities = this.roleRepository.findAll();
         if (roleEntities.isEmpty())
             throw  new ResourceNotFoundException("No hay registros en el sistema");
 
@@ -77,9 +91,39 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public PageResponseDto<RoleResponseDto> executeGetListRole(RoleFilerDto queryParamsDto) {
+        LOGGER.info("=== INGRESANDO METODO PARA FILTRAR ROLES ===");
+        LOGGER.info("QUERY PARAMS {} ", queryParamsDto.toString());
+
+        Sort sort = queryParamsDto.getPageParam().getSortDirection().equalsIgnoreCase(Constants.PARAM_DESC) ?
+                Sort.by(queryParamsDto.getPageParam().getSortBy()).descending() :
+                Sort.by(queryParamsDto.getPageParam().getSortBy()).ascending();
+
+        Pageable pageable = PageRequest.of(queryParamsDto.getPageParam().getPage(), queryParamsDto.getPageParam().getSize(), sort);
+
+        Specification<RoleEntity> spec = RoleSpecification.combineFromFilter(queryParamsDto);
+
+        Page<RoleEntity> roleListBD = this.roleRepository.findAll(spec, pageable);
+
+        if (roleListBD.isEmpty())
+            throw new ResourceNotFoundException("No se encontraron roles en el sistema");
+
+        // Convertir Page<RoleEntity> a Page<RoleResponseDto> usando el mapper
+        Page<RoleResponseDto> rolePage = roleListBD.map(role -> {
+            List<PermissionResponseDto> permissions = this.permissionService.findAllPermissionsByRoleId(role.getId());
+            return this.roleResponseMapper.toDto(role, permissions);
+        });
+
+        PageResponseDto<RoleResponseDto> response = new PageResponseDto<>(rolePage);
+        LOGGER.info("TOTAL DE REGISTROS ENCONTRADOS: {}", response.getContent().size());
+
+        return response;
+    }
+
+    @Override
     public RoleResponseDto executeGetRole(String id) {
         this.validateId(id);
-        Optional<RoleEntity> role =  this.roleRespository.findById(id);
+        Optional<RoleEntity> role =  this.roleRepository.findById(id);
 
         List<PermissionResponseDto> permissions = this.permissionService.findAllPermissionsByRoleId(id);
 
@@ -94,7 +138,7 @@ public class RoleServiceImpl implements RoleService {
     public ApiResponseDto executeUpdateRole(String id, RoleRequestDto roleRequestDto) {
         this.validateId(id);
 
-        RoleEntity role = this.roleRespository.findById(id)
+        RoleEntity role = this.roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol", "id", id));
 
         this.validateDuplicatedRole(roleRequestDto,id);
@@ -113,14 +157,14 @@ public class RoleServiceImpl implements RoleService {
 
         role.setPermissions(permissions);
 
-        role = this.roleRespository.save(role);
+        role = this.roleRepository.save(role);
 
         return new ApiResponseDto("Rol actualizado con éxito con id: " + role.getId());
     }
 
     @Override
     public RoleEntity findRoleById(String id) {
-        return roleRespository.findById(id)
+        return roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol", "id", id));
     }
 
@@ -128,16 +172,16 @@ public class RoleServiceImpl implements RoleService {
     public void executeDeleteRole(String id) {
         this.validateId(id);
 
-        RoleEntity role = this.roleRespository.findById(id)
+        RoleEntity role = this.roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol", "id", id));
 
         role.setIsDeleted(true);
-        this.roleRespository.save(role);
+        this.roleRepository.save(role);
     }
 
     @Override
     public RoleEntity findByName(String name) {
-        return roleRespository.findByName(name).orElseThrow(()->new ResourceNotFoundException("Rol","nombre",name));
+        return roleRepository.findByName(name).orElseThrow(()->new ResourceNotFoundException("Rol","nombre",name));
     }
 
     private void validateId(String id){
@@ -152,9 +196,9 @@ public class RoleServiceImpl implements RoleService {
         Optional<RoleEntity> existingRole;
 
         if (excludeId == null)
-            existingRole = roleRespository.findByName(roleDto.getName());
+            existingRole = roleRepository.findByName(roleDto.getName());
         else
-            existingRole = roleRespository.findByNameAndIdNot(roleDto.getName(), excludeId);
+            existingRole = roleRepository.findByNameAndIdNot(roleDto.getName(), excludeId);
 
 
         if (existingRole.isPresent())
