@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
@@ -25,7 +27,8 @@ public class ServiceEntity {
 
     private String name;
 
-    private Integer duration;
+    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime duration;
 
     private BigDecimal price;
 

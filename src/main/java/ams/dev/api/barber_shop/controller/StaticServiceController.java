@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/service")
 public class StaticServiceController {
-
     @Autowired
     private StaticService staticService;
 
@@ -86,13 +85,13 @@ public class StaticServiceController {
     }
 
     @GetMapping("/report")
-    public ResponseEntity<byte[]> executeGenerateReportClient(@RequestParam(required = false) String barbershopId) {
+    public ResponseEntity<byte[]> executeExportGeneralReportService(@RequestParam(required = false) String barbershopId) {
         try {
             byte[] excelContent = this.staticService.executeExportGeneralReportService(barbershopId);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", generateExcelUtil.generateFileName("reporte_clientes"));
+            headers.setContentDispositionFormData("attachment", generateExcelUtil.generateFileName("reporte_servicios"));
 
             return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
 

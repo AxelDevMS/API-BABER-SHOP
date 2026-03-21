@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Data
@@ -16,7 +17,8 @@ public class ServiceResponseDto {
 
     private String serviceId;
     private String name;
-    private Integer duration;
+    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime duration;
     private BigDecimal price;
     private Boolean isActive;
     private Boolean isDeleted;

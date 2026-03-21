@@ -155,14 +155,14 @@ public class StaticServiceImpl implements StaticService {
                 ServiceEntity::getName,
                 ServiceEntity::getDuration,
                 ServiceEntity::getPrice,
-                client -> client.getIsActive() ? "Activo" : "Inactivo"
+                service -> service.getIsActive() ? "Activo" : "Inactivo"
         );
 
-        ExcelReportConfig<ServiceEntity> config = ExcelReportConfig.<ClientEntity>builder()
-                .sheetName("Clientes")
-                .headers(new String[]{"ID","Nombre","Teléfono","Email","VIP","Estado"})
+        ExcelReportConfig<ServiceEntity> config = ExcelReportConfig.<ServiceEntity>builder()
+                .sheetName("Servicios")
+                .headers(new String[]{"ID","Nombre del Servicio","Duración","Precio","Estado"})
                 .fieldExtractors(extractorStaticServiceList)
-                .title("Reporte de Clientes")
+                .title("Reporte de Servicios")
                 .build();
 
         return generateExcel.generateExcel(serviceListBD, config);
