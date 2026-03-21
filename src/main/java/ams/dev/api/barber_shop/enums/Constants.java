@@ -10,6 +10,9 @@ public class Constants {
     public static final String PARAM_VIP = "vip";
 
 
+    //PARAMS TABLA STATIC SERVICE
+    public static final String PARAM_STATIC_SERVICE = "serviceId";
+
     //PARAMS PAGINACIÓN
     public static final String PARAM_DESC="desc";
 }
