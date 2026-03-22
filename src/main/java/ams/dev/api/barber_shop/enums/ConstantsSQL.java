@@ -8,4 +8,9 @@ public class ConstantsSQL {
     public static final String SELECT_CLIENTS_BY_BARBERSHOP_ID = "Client.findAllByBarbershopId";
     public static final String SELECT_CLIENTS_WITH_FILTERS = "Client.findAllWithFilters";
 
+    /* ============= CONSULTAS DE SERVICIOS DE ESTETICAS =================*/
+    public static final String SELECT_SERVICE_ID_AND_BARBERSHOP_ID = "Service.findByIdAndBarbershopId";
+    public static final String SELECT_LIST_SERVICE_BY_BARBERSHOP_ID = "Service.findAllByBarbershopId";
+    public static final String SELECT_SERVICE_BY_NAME_AND_BARBERSHOP_ID = "Service.findByNameAndBarbershopId";
+
 }
