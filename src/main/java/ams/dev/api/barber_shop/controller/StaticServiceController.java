@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -98,5 +99,17 @@ public class StaticServiceController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponseDto> executeImportMassiveService(@RequestPart("file")MultipartFile file, @RequestPart("indicator") String indicator){
+        ApiResponseDto responseDto = this.staticService.executeImportMassiveService(file,indicator);
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+    }
+
+    @PostMapping(value = "/update/massive", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponseDto> executeUpdateMassiveService(@RequestPart("file")MultipartFile file, @RequestPart("indicator") String indicator){
+        ApiResponseDto responseDto = this.staticService.executeImportMassiveService(file,indicator);
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 }

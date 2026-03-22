@@ -6,6 +6,7 @@ import ams.dev.api.barber_shop.dto.service.ServiceFilterDto;
 import ams.dev.api.barber_shop.dto.service.ServiceRequestDto;
 import ams.dev.api.barber_shop.dto.service.ServiceResponseDto;
 import ams.dev.api.barber_shop.entity.ServiceEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -24,5 +25,7 @@ public interface StaticService {
     void executeDeleteService(String serviceId, String barbershopId);
 
     byte[] executeExportGeneralReportService(String serviceId) throws IOException;
+
+    ApiResponseDto executeImportMassiveService(MultipartFile file, String  indicator);
 
 }
