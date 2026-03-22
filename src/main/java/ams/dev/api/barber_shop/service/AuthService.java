@@ -32,22 +32,5 @@ public interface AuthService {
      */
     UserEntity getUserByUsername(String username);
 
-    /**
-     * Crea un nuevo empleado/usuario en el sistema.
-     *
-     * Flujo técnico:
-     * 1. Mapea el DTO a entidad UserEntity
-     * 2. Encripta la contraseña usando BCryptPasswordEncoder
-     * 3. Persiste la entidad en la base de datos
-     * 4. Retorna un DTO de respuesta con mensaje de éxito e ID generado
-     *
-     * Seguridad:
-     * - La contraseña se encripta antes de guardar en BD
-     * - Se genera un ID único (UUID) automáticamente
-     *
-     * @param empolyeeRequestDto DTO con datos del empleado (username, password, isActive)
-     * @return ApiResponseDto con mensaje de confirmación y ID del usuario creado
-     */
-    ApiResponseDto executeCreateEmployee(UserRequestDto empolyeeRequestDto);
     ApiResponseDto authenticate(AuthRequestDto authRequestDto);
 }

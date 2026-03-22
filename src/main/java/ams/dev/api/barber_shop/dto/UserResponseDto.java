@@ -1,5 +1,6 @@
 package ams.dev.api.barber_shop.dto;
 
+import ams.dev.api.barber_shop.dto.role.RoleResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,8 +17,7 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponseDto implements Serializable {
     private String id;
-    private String name;
-    private String lastName;
+    private String fullName;
     private String phone;
     private String username;
     private String email;
@@ -26,10 +26,9 @@ public class UserResponseDto implements Serializable {
     private Date lastLogin;
     private RoleResponseDto role;
 
-    public UserResponseDto(String id, String name, String lastName, String phone, String username) {
+    public UserResponseDto(String id, String fullName, String phone, String username) {
         this.id = id;
-        this.name = name;
-        this.lastName = lastName;
+        this.fullName = fullName;
         this.phone = phone;
         this.username = username;
     }

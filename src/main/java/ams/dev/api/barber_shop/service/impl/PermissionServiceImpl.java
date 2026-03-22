@@ -1,19 +1,29 @@
 package ams.dev.api.barber_shop.service.impl;
 
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
-import ams.dev.api.barber_shop.dto.PermissionRequestDto;
-import ams.dev.api.barber_shop.dto.PermissionResponseDto;
+import ams.dev.api.barber_shop.dto.client.ClientResponseDto;
+import ams.dev.api.barber_shop.dto.pagination.PageResponseDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionFilterDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionRequestDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
+import ams.dev.api.barber_shop.enums.Constants;
 import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.exceptions.ResourceNotFoundException;
 import ams.dev.api.barber_shop.mapper.request.PermissionRequestMapper;
 import ams.dev.api.barber_shop.mapper.response.PermissionResponseMapper;
 import ams.dev.api.barber_shop.repository.PermissionRepository;
+import ams.dev.api.barber_shop.repository.specification.PermissionSpecification;
 import ams.dev.api.barber_shop.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -65,6 +75,35 @@ public class PermissionServiceImpl implements PermissionService {
         return permissionEntityList.stream()
                 .map(permissionEntity -> this.permissionResponseMapper.toDto(permissionEntity))
                 .toList();
+    }
+
+    @Override
+    public PageResponseDto<PermissionResponseDto> executeGetListPermission(PermissionFilterDto paramDto) {
+        LOGGER.info("=== INGRESANDO METODO PARA FILTRAR PERMISOS ===");
+        LOGGER.info("QUERY PARAMS {} ", paramDto.toString());
+
+        Sort sort = paramDto.getPageParam().getSortDirection().equalsIgnoreCase(Constants.PARAM_DESC) ?
+                Sort.by(paramDto.getPageParam().getSortBy()).descending() :
+                Sort.by(paramDto.getPageParam().getSortBy()).ascending();
+
+        Pageable pageable = PageRequest.of(paramDto.getPageParam().getPage(),paramDto.getPageParam().getSize(),sort);
+
+        Specification<PermissionEntity> spec = PermissionSpecification.combineFromFilter(paramDto);
+
+        Page<PermissionEntity> permissionListBD = this.permissionRepository.findAll(spec,pageable);
+
+        if (permissionListBD.isEmpty())
+            throw new ResourceNotFoundException("No se encontraron permisos en el sistema");
+
+        Page<PermissionResponseDto> permissionList = permissionListBD.map(
+                permissionBD -> this.permissionResponseMapper.toDto(permissionBD)
+        );
+
+        PageResponseDto<PermissionResponseDto> response = new PageResponseDto<>(permissionList);
+        LOGGER.info("TOTAL DE REGISTROS ENCONTRADOS: {}", response.getContent().size());
+
+        return response;
+
     }
 
     @Override

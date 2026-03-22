@@ -12,5 +12,35 @@ spring:
     restart:
       enabled: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: amsdevtech@gmail.com
+    password: mcfryptbdhpnsucm
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+app:
+  mail:
+    from: amsdevtech@gmail.com
+    fromName: Barber Shop APP
+  base-url: http://localhost:8080
+
+spring doc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tryItOutEnabled: true
+    filter: true
+    tagsSorter: alpha
+    operationsSorter: method
+
+
 server:
   port: 8080

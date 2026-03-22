@@ -1,6 +1,6 @@
 package ams.dev.api.barber_shop.mapper.response;
 
-import ams.dev.api.barber_shop.dto.RoleResponseDto;
+import ams.dev.api.barber_shop.dto.role.RoleResponseDto;
 import ams.dev.api.barber_shop.dto.UserResponseDto;
 import ams.dev.api.barber_shop.entity.UserEntity;
 import org.springframework.stereotype.Component;
@@ -14,14 +14,12 @@ public class UserResponseMapper {
         return UserResponseDto
                 .builder()
                 .id(userEntity.getId())
-                .name(userEntity.getName())
-                .lastName(userEntity.getLastName())
+                .fullName(userEntity.getFullName())
                 .phone(userEntity.getPhone())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
                 .isActive(userEntity.getIsActive())
                 .isDeleted(userEntity.getIsDeleted())
-                .lastLogin(userEntity.getLastLogin())
                 .build()
                 ;
     }
@@ -32,14 +30,12 @@ public class UserResponseMapper {
         return UserResponseDto
                 .builder()
                 .id(userEntity.getId())
-                .name(userEntity.getName())
-                .lastName(userEntity.getLastName())
+                .fullName(userEntity.getFullName())
                 .phone(userEntity.getPhone())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
                 .isActive(userEntity.getIsActive())
                 .isDeleted(userEntity.getIsDeleted())
-                .lastLogin(userEntity.getLastLogin())
                 .role(roleDto)
                 .build()
                 ;

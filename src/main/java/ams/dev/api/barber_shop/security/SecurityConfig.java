@@ -15,6 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * CONFIGURACIÓN CENTRAL DE SEGURIDAD DE LA APLICACIÓN
@@ -89,15 +95,10 @@ public class SecurityConfig {
         // Configuración fluida de HttpSecurity
         httpSecurity
                 .csrf(csrf -> csrf.disable()) // Deshabilita CSRF (Cross-Site Request Forgery) porque la app es stateless y usa JWT
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> // Configura la autorización para peticiones HTTP
                         auth
-                                .requestMatchers("/user/**") // Define patrones de URL específicos
-                                .permitAll() // Permite acceso sin autenticación a todas las rutas que comiencen con /user/**
-                                .requestMatchers("/permission/**")
-                                .permitAll()
-                                .requestMatchers("/role/**")
-                                .permitAll()
-                                .requestMatchers("/shop/**")
+                                .requestMatchers("/api/contract/**","/api/auth/**","/swagger-ui/**","/v3/api-docs/**") // Define patrones de URL específicos
                                 .permitAll()
                                 .anyRequest() // Cualquier otra petición no cubierta por reglas anteriores
                                 .authenticated() // Requiere que el usuario esté autenticado
@@ -147,5 +148,40 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); // Instancia el encoder BCrypt con strength por defecto (10)
+    }
+
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Permitir específicamente tu frontend de Angular
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+
+        // Permitir todos los métodos HTTP que necesitas
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"
+        ));
+
+        // Permitir todos los headers necesarios
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Origin",
+                "Content-Type",
+                "Accept",
+                "Authorization",
+                "X-Requested-With"
+        ));
+
+        // Permitir el envío de credenciales (cookies, headers de autenticación)
+        configuration.setAllowCredentials(true);
+
+        // Tiempo máximo que el navegador puede cachear la respuesta preflight (en segundos)
+        configuration.setMaxAge(3600L);
+
+        // Aplicar esta configuración a todas las rutas
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }

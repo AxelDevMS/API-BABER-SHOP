@@ -4,6 +4,5 @@ public enum BarberShopStatus {
     ACTIVE,
     INACTIVE,
     SUSPENDED,
-    DELETED,
     PENDING
 }

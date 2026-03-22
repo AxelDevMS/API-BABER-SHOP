@@ -3,6 +3,7 @@ package ams.dev.api.barber_shop.service;
 import ams.dev.api.barber_shop.dto.ApiResponseDto;
 import ams.dev.api.barber_shop.dto.BarberShopRequestDto;
 import ams.dev.api.barber_shop.dto.BarberShopResponseDto;
+import ams.dev.api.barber_shop.entity.BarberShopEntity;
 
 import java.util.List;
 
@@ -13,4 +14,5 @@ public interface BarberShopService {
     BarberShopResponseDto executeGetBarberShop(String barberShopId);
     ApiResponseDto executeUpdateBarberShop(String barberShopId,BarberShopRequestDto barberShopRequestDto);
     void executeDeletedBarberShop(String barberShopId);
+    BarberShopEntity findById(String barbershopId);
 }

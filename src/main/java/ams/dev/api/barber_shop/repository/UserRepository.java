@@ -21,12 +21,15 @@ public interface UserRepository extends JpaRepository<UserEntity,String> {
 
     @Query(
             "SELECT new ams.dev.api.barber_shop.dto.UserResponseDto(" +
-                    "u.id," +
-                    "u.name," +
-                    "u.lastName," +
-                    "u.phone," +
-                    "u.username)" +
-                    "FROM UserEntity u JOIN u.barberShops b WHERE b.id = :barberShopId"
+                    "u.id, " +
+                    "u.fullName, " +
+                    "u.phone, " +
+                    "u.username) " +
+                    "FROM UserEntity u " +
+                    "JOIN u.barberShopAssignments ba " +  // ← Campo correcto en UserEntity
+                    "WHERE ba.barbershop.id = :barberShopId " +
+                    "AND ba.isActive = true " +
+                    "AND ba.isDeleted = false"
     )
     List<UserResponseDto> findAllUserByBarberShopId(@Param("barberShopId") String barberShopId);
 }

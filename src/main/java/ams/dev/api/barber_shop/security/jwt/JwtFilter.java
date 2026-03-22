@@ -1,6 +1,8 @@
 package ams.dev.api.barber_shop.security.jwt;
 
+import ams.dev.api.barber_shop.entity.RoleEntity;
 import ams.dev.api.barber_shop.enums.RoleEnum;
+import ams.dev.api.barber_shop.service.RoleService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -110,6 +112,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired // Inyección automática del servicio JWT para validación y extracción de claims
     private JwtService jwtService;
 
+    @Autowired
+    private RoleService roleService;
+
     /**
      * Método principal del filtro que se ejecuta para cada petición HTTP.
      *
@@ -139,26 +144,29 @@ public class JwtFilter extends OncePerRequestFilter {
         // 2. No hay una autenticación previa en el contexto de seguridad
         //    (esto evita procesar el token múltiples veces en la misma petición)
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null){
-
             // Verifica la firma del token y extrae TODOS los claims (información) que contiene
             // Si el token es inválido (firma incorrecta, malformado, etc.), JwtService lanzará una excepción
             Claims claims = jwtService.verifySignatureAndExtractAllClaims(token);
+
+
+            //RECUPERA EL ROL Y HACE UNA BUSCAQUEDA A LA BD APRA RECUEPRAR LOS PERMISOS
+            String role = claims.get("Role",String.class);
+            RoleEntity roleAndPermissions = roleService.findByName(role);
+
+            // Crea la lista de autoridades
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
             // Obtiene el rol del usuario desde el claim personalizado "Role"
             // El formato esperado es el nombre del rol sin prefijo (ej: "ADMIN", "USER")
             // Luego construye el nombre completo del enum: "ROLE_" + valor obtenido
             // Ejemplo: claim "Role": "ADMIN" → RoleEnum.ROLE_ADMIN
-            RoleEnum role = RoleEnum.valueOf("ROLE_"+claims.get("Role",String.class));
-
-            // Crea una lista mutable de autoridades (granted authorities) para el usuario
-            // Inicializa la lista con el nombre del rol como autoridad
-            List<SimpleGrantedAuthority> simpleGrantedAuthorityList = new ArrayList<>(List.of(new SimpleGrantedAuthority(role.name())));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + roleAndPermissions.getName()));
 
             // Itera sobre TODOS los permisos asociados al rol del usuario
             // Cada permiso se agrega como una autoridad adicional
             // Esto permite control de acceso fino a nivel de métodos con @PreAuthorize
-            role.getPermissions().forEach(permission ->{
-                simpleGrantedAuthorityList.add(new SimpleGrantedAuthority(permission.name()));
+            roleAndPermissions.getPermissions().forEach(permission -> {
+                authorities.add(new SimpleGrantedAuthority(permission.getName()));
             });
 
             // Verifica que el token NO haya expirado comparando la fecha actual
@@ -173,7 +181,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken userPassAuthToken = new UsernamePasswordAuthenticationToken(
                         claims.getSubject(), // Extrae el username del claim "sub" (subject)
                         null,                // No se necesitan credenciales adicionales
-                        simpleGrantedAuthorityList // Lista de autoridades (rol + permisos)
+                        authorities // Lista de autoridades (rol + permisos)
                 );
 
                 // Enriquece el token de autenticación con detalles de la petición HTTP:

@@ -8,6 +8,7 @@ import ams.dev.api.barber_shop.exceptions.BusinessException;
 import ams.dev.api.barber_shop.exceptions.DuplicateResourceException;
 import ams.dev.api.barber_shop.mapper.request.UserRequestMapper;
 import ams.dev.api.barber_shop.repository.UserRepository;
+import ams.dev.api.barber_shop.service.EmailService;
 import ams.dev.api.barber_shop.service.RoleService;
 import ams.dev.api.barber_shop.service.UserService;
 import org.slf4j.Logger;
@@ -73,6 +74,6 @@ public class UserServiceImpl implements UserService {
             existingUser = userRepository.findByUsernameAndIdNot(userRequestDto.getUsername(), excludeId);
 
         if (existingUser.isPresent())
-            throw new DuplicateResourceException("Role", "nombre", userRequestDto.getUsername());
+            throw new DuplicateResourceException("Usuario", "nombre", userRequestDto.getUsername());
     }
 }

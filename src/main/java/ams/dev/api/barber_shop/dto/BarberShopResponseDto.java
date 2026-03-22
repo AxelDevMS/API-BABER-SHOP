@@ -31,7 +31,6 @@ public class BarberShopResponseDto implements Serializable {
     private LocalTime openingTime;
     @JsonFormat(pattern = "HH:mm")
     private LocalTime closingTime;
-    private String timezone;
     private BarberShopStatus status;
     private List<UserResponseDto> users;
 }

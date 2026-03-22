@@ -1,6 +1,6 @@
 package ams.dev.api.barber_shop.mapper.response;
 
-import ams.dev.api.barber_shop.dto.PermissionResponseDto;
+import ams.dev.api.barber_shop.dto.permission.PermissionResponseDto;
 import ams.dev.api.barber_shop.entity.PermissionEntity;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +15,7 @@ public class PermissionResponseMapper {
         permissionResponseDto.setAction(permissionEntity.getAction());
         permissionResponseDto.setDescription(permissionEntity.getDescription());
         permissionResponseDto.setIsActive(permissionEntity.getIsActive());
+        permissionResponseDto.setIsDeleted(permissionEntity.getIsDeleted());
         permissionResponseDto.setCreatedAt(permissionEntity.getCreatedAt());
         permissionResponseDto.setUpdatedAt(permissionEntity.getUpdatedAt());
         return permissionResponseDto;
